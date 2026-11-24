@@ -49,6 +49,9 @@ jobs:
       - name: Walk a store that types its own rules (Decision 22)
         if: always()
         run: python scripts/windows_walkthrough.py --out "$env:RUNNER_TEMP\walkthrough\typed-rules" --typed-rules
+      - name: Walk a store whose sheet uses questions 13-16 (Decision 30)
+        if: always()
+        run: python scripts/windows_walkthrough.py --out "$env:RUNNER_TEMP\walkthrough\shaped-rules" --shaped-rules
       - name: Build the release zip and install it with INSTALL.cmd
         if: always()
         run: |

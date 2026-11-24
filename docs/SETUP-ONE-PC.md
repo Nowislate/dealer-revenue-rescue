@@ -20,9 +20,8 @@ WHAT YOU NEED
 
 1. One Windows 10 or Windows 11 PC. Use one the store can set aside.
 2. A laser printer that connects with a USB cable, and its cable.
-   The app sends each form to the printer as a PDF file. Pick a printer
-   whose specifications list "PDF direct print" (or PDF and PostScript).
-   Many office laser printers do; most home inkjet printers do not.
+   Any printer Windows can print to works. Install its Windows driver
+   and print a Windows test page before you start.
 3. A box of plain letter paper (8.5 x 11). Every form prints on blank
    letter paper.
 4. A USB stick.
@@ -133,6 +132,11 @@ A manager does this once. Have these ready:
 3. Open "Accounts / PIN". Create a second admin account.
    One lost PIN then never locks the store out.
    Setup asks for this before it lets you finish.
+   Don't lose or forget your PIN. An admin can reset anyone else's
+   PIN. If every admin forgets, IT must reset the accounts file and
+   every account is made again (docs/ADMIN_GUIDE.md, "Accounts and
+   recovery"). Re-installing or downloading the app again does not
+   reset a PIN.
 
 4. Click Setup. The setup steps open.
 

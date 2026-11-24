@@ -30,7 +30,7 @@ from dataclasses import asdict, dataclass, field
 from decimal import Decimal, InvalidOperation
 from typing import Optional
 
-from .models import ZERO, Buyer, DealInputs, LeaseInputs, TradeIn
+from .models import ZERO, Buyer, DealInputs, LeaseInputs, TradeIn, Vehicle
 
 KIND_RETAIL = "retail"
 KIND_LEASE = "lease"
@@ -83,6 +83,75 @@ def parse_whole(text, *, label: str, default: Optional[int] = None) -> int:
     return int(raw)
 
 
+# -- Rule sheet questions 13-15: one item per line (decision 30) ----------
+
+
+def _rows(text: str, label: str, sizes: tuple) -> list[list[str]]:
+    rows = []
+    for number, line in enumerate((text or "").splitlines(), 1):
+        if not line.strip():
+            continue
+        parts = [part.strip() for part in line.split(",")]
+        if len(parts) not in sizes:
+            raise ValueError(f"{label}, line {number}: {line.strip()!r} has "
+                             f"{len(parts)} parts; see the example.")
+        rows.append(parts)
+    return rows
+
+
+def parse_bands(text: str) -> tuple:
+    """"rate %, from $, to $" per line; a blank "to" means no top."""
+    from .state_rules import TaxBand
+    out = []
+    for parts in _rows(text, "Extra state tax", (2, 3)):
+        high = parts[2] if len(parts) == 3 else ""
+        out.append(TaxBand(parse_percent(parts[0], label="Extra state tax rate"),
+                           parse_money(parts[1], label="Extra state tax from", required=True),
+                           parse_money(high, label="Extra state tax to") if high else None))
+    return tuple(out)
+
+
+def parse_brackets(text: str) -> tuple:
+    """"from $, rate %" per line."""
+    from .state_rules import RateBracket
+    return tuple(RateBracket(parse_money(a, label="Price bracket from", required=True),
+                             parse_percent(b, label="Price bracket rate"))
+                 for a, b in _rows(text, "Price bracket", (2,)))
+
+
+def parse_classes(text: str) -> tuple:
+    """"class name, rate %" per line. The rate follows the LAST comma,
+    so a name may hold one ("Truck over 10,000 lb GVW, 3")."""
+    from .state_rules import TaxClass
+    out = []
+    for number, line in enumerate((text or "").splitlines(), 1):
+        if not line.strip():
+            continue
+        name, comma, rate = line.rpartition(",")
+        if not comma or not name.strip():
+            raise ValueError(f"Vehicle class, line {number}: {line.strip()!r} needs "
+                             "a name, a comma and a rate; see the example.")
+        out.append(TaxClass(name.strip(), parse_percent(rate, label=f"Rate for {name.strip()}")))
+    return tuple(out)
+
+
+def _pct_text(rate: Decimal) -> str:
+    return format((rate * 100).normalize(), "f")
+
+
+def bands_text(bands) -> str:
+    return "\n".join(f"{_pct_text(b.rate)}, {b.low}" + ("" if b.high is None else f", {b.high}")
+                     for b in bands)
+
+
+def brackets_text(brackets) -> str:
+    return "\n".join(f"{b.from_price}, {_pct_text(b.rate)}" for b in brackets)
+
+
+def classes_text(classes) -> str:
+    return "\n".join(f"{c.name}, {_pct_text(c.rate)}" for c in classes)
+
+
 @dataclass
 class RetailCheckEntry:
     """One recent retail finance deal as the store's DMS shows it.
@@ -106,6 +175,10 @@ class RetailCheckEntry:
     term_months: int = 0
     annual_rate: Decimal = ZERO  # fraction: 0.0749 = 7.49% APR
     days_to_first_payment: int = 30
+    # Only for a rule sheet that uses them (decision 30).
+    used_vehicle: bool = False
+    tax_class: str = ""
+    state_value: Optional[Decimal] = None
     # The DMS's own answers.
     dms_total_tax: Decimal = ZERO
     dms_amount_financed: Decimal = ZERO
@@ -190,10 +263,16 @@ class MathComparison:
         }
 
 
+# Decision 30's fields are left out while blank, so a check saved before
+# them keeps its fingerprint and stays passed after an upgrade.
+_OPTIONAL_BLANK = {"used_vehicle": False, "tax_class": "", "state_value": None}
+
+
 def entry_to_dict(entry) -> dict:
     return {
         key: (str(value) if isinstance(value, Decimal) else value)
         for key, value in asdict(entry).items()
+        if not (key in _OPTIONAL_BLANK and value == _OPTIONAL_BLANK[key])
     }
 
 
@@ -212,7 +291,11 @@ def entry_from_dict(kind: str, data: dict):
         if key not in data:
             continue
         raw = data[key]
-        if isinstance(default, Decimal):
+        if key == "state_value":
+            values[key] = None if raw in (None, "") else Decimal(str(raw))
+        elif isinstance(default, bool):
+            values[key] = bool(raw)
+        elif isinstance(default, Decimal):
             values[key] = Decimal(str(raw))
         elif isinstance(default, int):
             values[key] = int(raw)
@@ -274,7 +357,7 @@ def compare_retail(entry: RetailCheckEntry, preset) -> MathComparison:
     """Run the check deal through the same code a real deal runs."""
     # Imported here: deal_flow imports setup_wizard, which imports us.
     from .deal_flow import compute_financing
-    from .tax_engine import calculate_retail_deal
+    from .tax_engine import TaxInputError, calculate_retail_deal
 
     result = MathComparison(kind=KIND_RETAIL)
     rate, problem = _county_rate(preset, entry.county)
@@ -290,6 +373,8 @@ def compare_retail(entry: RetailCheckEntry, preset) -> MathComparison:
     dealer = preset.dealer
     inputs = DealInputs(
         buyer=Buyer(full_name="Setup math check", residence_county=entry.county.strip()),
+        vehicle=Vehicle(is_new=not entry.used_vehicle, tax_class=entry.tax_class.strip(),
+                        state_value=entry.state_value),
         trade=TradeIn(allowance=entry.trade_allowance, payoff=entry.trade_payoff)
         if (entry.trade_allowance or entry.trade_payoff)
         else None,
@@ -308,7 +393,11 @@ def compare_retail(entry: RetailCheckEntry, preset) -> MathComparison:
         annual_rate=entry.annual_rate,
         days_to_first_payment=entry.days_to_first_payment,
     )
-    deal = calculate_retail_deal(inputs, preset=preset)
+    try:
+        deal = calculate_retail_deal(inputs, preset=preset)
+    except TaxInputError as exc:
+        result.errors.append(str(exc))
+        return result
     financing = compute_financing(inputs, deal)
     result.lines = [
         CheckLine("Total sales tax", deal.total_tax, entry.dms_total_tax),
@@ -416,6 +505,12 @@ RETAIL_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("annual_rate", "APR (%) *", "percent"),
     ("days_to_first_payment", "Days to first payment", "days"),
 )
+# Shown only when the rule sheet uses questions 14, 15 or 17.
+RETAIL_SHAPE_FIELDS: tuple[tuple[str, str, str], ...] = (
+    ("used_vehicle", "Used vehicle? (yes or no)", "yesno"),
+    ("tax_class", "Vehicle class (blank for standard)", "opttext"),
+    ("state_value", "State value $ (only if your state taxes it)", "optmoney"),
+)
 RETAIL_DMS_FIELDS: tuple[tuple[str, str, str], ...] = (
     ("dms_total_tax", "DMS total sales tax *", "money*"),
     ("dms_amount_financed", "DMS amount financed *", "money*"),
@@ -465,6 +560,15 @@ def _parse_fields(cls, specs, texts: dict):
                 value = parse_whole(raw, label=label)
             elif kind == "days":
                 value = parse_whole(raw, label=label, default=30)
+            elif kind == "yesno":
+                answer = (raw or "").strip().lower()
+                if answer not in ("", "yes", "no", "y", "n"):
+                    raise ValueError(f"{label}: type yes or no.")
+                value = answer in ("yes", "y")
+            elif kind == "opttext":
+                value = (raw or "").strip()
+            elif kind == "optmoney":
+                value = parse_money(raw, label=label) if (raw or "").strip() else None
             elif kind == "factor":
                 value = parse_money(raw, label=label, required=True)
             else:  # pragma: no cover - spec typo
@@ -479,7 +583,9 @@ def _parse_fields(cls, specs, texts: dict):
 
 
 def retail_entry_from_text(texts: dict) -> RetailCheckEntry:
-    return _parse_fields(RetailCheckEntry, RETAIL_FIELDS + RETAIL_DMS_FIELDS, texts)
+    specs = RETAIL_FIELDS + RETAIL_DMS_FIELDS + tuple(
+        f for f in RETAIL_SHAPE_FIELDS if f[0] in texts)
+    return _parse_fields(RetailCheckEntry, specs, texts)
 
 
 def lease_entry_from_text(texts: dict) -> LeaseCheckEntry:
@@ -493,6 +599,10 @@ def entry_to_text(entry, specs) -> dict:
         value = getattr(entry, key)
         if kind == "percent":
             texts[key] = format((value * 100).normalize(), "f")
+        elif kind == "yesno":
+            texts[key] = "yes" if value else "no"
+        elif kind in ("opttext", "optmoney"):
+            texts[key] = "" if value is None else str(value)
         else:
             texts[key] = str(value)
     return texts

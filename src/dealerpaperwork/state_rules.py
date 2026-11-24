@@ -64,6 +64,52 @@ LEASE_UPFRONT_PRICE = "upfront_price"
 LEASE_NONE = "none"
 LEASE_TAXES = (LEASE_MONTHLY, LEASE_UPFRONT_TOTAL, LEASE_UPFRONT_PRICE, LEASE_NONE)
 
+# Questions 13-17 (Lane, 2026-11-24, decision 30): the state tax shapes
+# the first twelve questions could not say. Each is optional; a sheet
+# that leaves them blank runs exactly as before.
+
+# Question 17: tax on a state-set value instead of the price.
+VALUE_PRICE = "price"  # the usual: tax the price
+VALUE_STATE = "state_value"  # tax the state's value for the vehicle
+VALUE_GREATER = "greater"  # tax the greater of price and state value
+VALUE_RULES = (VALUE_PRICE, VALUE_STATE, VALUE_GREATER)
+
+
+@dataclass(frozen=True)
+class TaxBand:
+    """Question 13: an extra state tax on one slice of the taxable
+    amount, from ``low`` up to ``high`` dollars (None: no top).
+    Tennessee's single article tax is one band: 2.75% from $1,600 to
+    $3,200."""
+
+    rate: Decimal
+    low: Decimal
+    high: Optional[Decimal] = None
+
+    def tax_on(self, base: Decimal) -> Decimal:
+        top = base if self.high is None else min(base, self.high)
+        return max(top - self.low, Decimal("0")) * self.rate
+
+
+@dataclass(frozen=True)
+class RateBracket:
+    """Question 14: the state rate when the selling price is at least
+    ``from_price``. Arkansas used cars: none under $4,000, a lower rate
+    from $4,000 to $10,000, the full rate from $10,000."""
+
+    from_price: Decimal
+    rate: Decimal
+
+
+@dataclass(frozen=True)
+class TaxClass:
+    """Question 15: a vehicle class with its own state rate, picked on
+    the deal. Mississippi: trucks over 10,000 lb GVW at 3%."""
+
+    name: str
+    rate: Decimal
+
+
 # The last choice on questions 1 and 11: setup stops, nothing guesses.
 UNSUPPORTED = "unsupported"
 UNSUPPORTED_MESSAGE = (
@@ -92,6 +138,42 @@ class StateRules:
     taxed: frozenset = field(default_factory=frozenset)
     lease_tax: str = LEASE_MONTHLY
     lease_reduction_taxed: bool = False
+    # Questions 13-17 (retail deals). Empty means the shape is not used.
+    bands: tuple = ()
+    brackets: tuple = ()
+    brackets_used_only: bool = False
+    classes: tuple = ()
+    min_tax: Optional[Decimal] = None
+    value_rule: str = VALUE_PRICE
+    value_used_only: bool = True
+
+    def state_rate_for(self, base_rate: Decimal, *, price: Decimal,
+                       is_new: bool, tax_class: str = "") -> Decimal:
+        """The state rate for one deal: its vehicle class's rate, else
+        the price bracket's, else the preset's state rate."""
+        if tax_class:
+            for item in self.classes:
+                if item.name == tax_class:
+                    return item.rate
+            raise ValueError(
+                f"The vehicle class {tax_class!r} is not on the rule sheet.")
+        if self.brackets and not (self.brackets_used_only and is_new):
+            rate = None
+            for bracket in sorted(self.brackets, key=lambda b: b.from_price):
+                if price >= bracket.from_price:
+                    rate = bracket.rate
+            if rate is not None:
+                return rate
+        return base_rate
+
+    @property
+    def uses_vehicle_details(self) -> bool:
+        """Whether a deal must say new or used, its class or its state
+        value for this sheet's tax (questions 14, 15 and 17)."""
+        return bool(self.brackets or self.classes or self.value_rule != VALUE_PRICE)
+
+    def needs_state_value(self, is_new: bool) -> bool:
+        return self.value_rule != VALUE_PRICE and not (self.value_used_only and is_new)
 
     def is_taxed(self, charge: str) -> bool:
         if charge not in CHARGES:
@@ -161,6 +243,50 @@ def validate_rules(rules: StateRules, local_places: Optional[dict] = None) -> li
             errors.append(f"Rule sheet: unknown charge {charge!r}.")
     if rules.lease_tax not in LEASE_TAXES:
         errors.append(f"Rule sheet: unknown lease tax {rules.lease_tax!r}.")
+    errors += _shape_errors(rules)
+    return errors
+
+
+def _rate_ok(rate) -> bool:
+    return isinstance(rate, Decimal) and Decimal("0") <= rate < Decimal("1")
+
+
+def _shape_errors(rules: StateRules) -> list[str]:
+    """Plain problems with questions 13-17."""
+    errors: list[str] = []
+    for band in rules.bands:
+        if not _rate_ok(band.rate) or band.low < 0 or (
+                band.high is not None and band.high <= band.low):
+            errors.append(
+                "Rule sheet 13: each extra tax needs a rate and a dollar "
+                "range whose top is above its bottom.")
+            break
+    if rules.brackets:
+        froms = [b.from_price for b in rules.brackets]
+        if any(not _rate_ok(b.rate) or b.from_price < 0 for b in rules.brackets):
+            errors.append("Rule sheet 14: each price bracket needs a price "
+                          "and a rate from 0 to 99.99%.")
+        elif min(froms) != 0:
+            errors.append("Rule sheet 14: the first price bracket must start "
+                          "at $0, so every price has a rate.")
+        elif len(set(froms)) != len(froms):
+            errors.append("Rule sheet 14: two price brackets start at the same price.")
+    names = [c.name for c in rules.classes]
+    if any(not n.strip() or not _rate_ok(c.rate) for n, c in zip(names, rules.classes)):
+        errors.append("Rule sheet 15: each vehicle class needs a name and a rate.")
+    elif len(set(names)) != len(names):
+        errors.append("Rule sheet 15: two vehicle classes have the same name.")
+    if rules.min_tax is not None and rules.min_tax <= 0:
+        errors.append("Rule sheet 16: the least tax per deal must be more than $0.")
+    if (rules.min_tax is not None and rules.max_tax is not None
+            and rules.min_tax > rules.max_tax):
+        errors.append("Rule sheet 16: the least tax is more than the most tax.")
+    if rules.value_rule not in VALUE_RULES:
+        errors.append(f"Rule sheet 17: unknown value rule {rules.value_rule!r}.")
+    if rules.tax_kind == TAX_NONE and (rules.bands or rules.brackets or rules.classes
+                                        or rules.min_tax is not None
+                                        or rules.value_rule != VALUE_PRICE):
+        errors.append("Rule sheet: questions 13-17 need a state that taxes the sale.")
     return errors
 
 
@@ -186,7 +312,21 @@ def _money(value) -> Optional[Decimal]:
     return None if value in (None, "") else D(value)
 
 
+# Questions 13-17 at their blank answers. They are left out of the saved
+# sheet, so a sheet saved before decision 30 reads, saves and
+# fingerprints exactly as it did: no approval or math check reopens.
+_SHAPE_BLANK = {"bands": [], "brackets": [], "brackets_used_only": False,
+                "classes": [], "min_tax": None, "value_rule": VALUE_PRICE,
+                "value_used_only": True}
+
+
 def rules_to_dict(rules: StateRules) -> dict:
+    data = _rules_dict(rules)
+    return {key: value for key, value in data.items()
+            if not (key in _SHAPE_BLANK and value == _SHAPE_BLANK[key])}
+
+
+def _rules_dict(rules: StateRules) -> dict:
     return {
         "state": rules.state,
         "built_in": rules.built_in,
@@ -203,6 +343,16 @@ def rules_to_dict(rules: StateRules) -> dict:
         "taxed": sorted(rules.taxed),
         "lease_tax": rules.lease_tax,
         "lease_reduction_taxed": rules.lease_reduction_taxed,
+        "bands": [{"rate": str(b.rate), "low": str(b.low),
+                   "high": None if b.high is None else str(b.high)}
+                  for b in rules.bands],
+        "brackets": [{"from_price": str(b.from_price), "rate": str(b.rate)}
+                     for b in rules.brackets],
+        "brackets_used_only": rules.brackets_used_only,
+        "classes": [{"name": c.name, "rate": str(c.rate)} for c in rules.classes],
+        "min_tax": None if rules.min_tax is None else str(rules.min_tax),
+        "value_rule": rules.value_rule,
+        "value_used_only": rules.value_used_only,
     }
 
 
@@ -228,5 +378,15 @@ def rules_from_dict(data) -> StateRules:
         taxed=frozenset(data.get("taxed") or ()),
         lease_tax=str(data.get("lease_tax") or LEASE_MONTHLY),
         lease_reduction_taxed=bool(data.get("lease_reduction_taxed", False)),
+        bands=tuple(TaxBand(D(b["rate"]), D(b["low"]), _money(b.get("high")))
+                    for b in data.get("bands") or ()),
+        brackets=tuple(RateBracket(D(b["from_price"]), D(b["rate"]))
+                       for b in data.get("brackets") or ()),
+        brackets_used_only=bool(data.get("brackets_used_only", False)),
+        classes=tuple(TaxClass(str(c["name"]), D(c["rate"]))
+                      for c in data.get("classes") or ()),
+        min_tax=_money(data.get("min_tax")),
+        value_rule=str(data.get("value_rule") or VALUE_PRICE),
+        value_used_only=bool(data.get("value_used_only", True)),
     )
 

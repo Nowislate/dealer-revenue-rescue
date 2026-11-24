@@ -63,7 +63,7 @@ from .state_rules import rules_from_dict
 from .presets import _lease_from_dict as _preset_lease_from_dict
 from .presets import _profile_from_dict as _preset_profile_from_dict
 from .setup_wizard import DEFAULT_SETUP_PATH, is_setup_complete
-from .tax_engine import calculate_retail_deal, cents, installment_terms
+from .tax_engine import TaxInputError, calculate_retail_deal, cents, installment_terms
 from .users import ACTION_CERTIFY_DEAL, ACTION_EDIT_DEAL, User, has_permission
 
 DEFAULT_DEALS_DIR = Path("data") / "deals"
@@ -691,9 +691,12 @@ class DealSession:
             self.inputs.county_surtax_rate = self.preset.local_rate_for(county)
         except KeyError as exc:
             raise DealFlowError(str(exc.args[0])) from None
-        self.worksheet_result = calculate_retail_deal(
-            self.inputs, preset=self.preset, certify=False
-        )
+        try:
+            self.worksheet_result = calculate_retail_deal(
+                self.inputs, preset=self.preset, certify=False
+            )
+        except TaxInputError as exc:
+            raise DealFlowError(str(exc)) from None
         self.financing = compute_financing(self.inputs, self.worksheet_result)
         # The engine's payment estimate runs on its step-12 amount due,
         # which does not net a trade payoff. The printed figures must be

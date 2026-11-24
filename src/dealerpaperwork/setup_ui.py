@@ -538,6 +538,48 @@ if TK_AVAILABLE:
                 "12. Is a lease down payment or rebate taxed up front?",
                 "rules_lease_reduction", (("yes", "Yes"), ("no", "No")),
                 "yes" if t.lease_reduction_taxed else "no")
+            self._note(
+                "Questions 13 to 17 are for states whose tax the questions "
+                "above cannot say. Leave them blank if they do not apply. "
+                "They apply to retail deals.", fg="#444444")
+            self.shape_texts = {}
+
+            def lines(name, label, example, initial):
+                tk.Label(self.parent, text=label, anchor="w").pack(fill="x", pady=(8, 0))
+                self._note(example, fg="#444444")
+                box = tk.Text(self.parent, height=3, width=60)
+                box.pack(fill="x", pady=2)
+                box.insert("1.0", initial)
+                self.shape_texts[name] = box
+
+            lines("bands", "13. Extra state tax on a dollar range of the taxable amount",
+                  "One per line: rate %, from $, to $ (leave the last blank for no top). "
+                  "Example: 2.75, 1600, 3200", mc.bands_text(t.bands))
+            lines("brackets", "14. State rate set by the selling price",
+                  "One per line: from $, rate %. Start at 0. Example: 0, 0 then "
+                  "4000, 3.5 then 10000, 6.5", mc.brackets_text(t.brackets))
+            self._radio_row(
+                "Price brackets apply to", "rules_brackets_used",
+                (("no", "All vehicles"), ("yes", "Used vehicles only")),
+                "yes" if t.brackets_used_only else "no")
+            lines("classes", "15. Vehicle classes with their own state rate",
+                  "One per line: class name, rate %. The deal screen offers these. "
+                  "Example: Truck over 10,000 lb GVW, 3", mc.classes_text(t.classes))
+            self._field("16. Least tax per deal $", "rules_min_tax",
+                        "" if t.min_tax is None else str(t.min_tax))
+            self._note("Blank means no least amount.", fg="#444444")
+            self._radio_row(
+                "17. What does the state tax?", "rules_value_rule",
+                ((sr.VALUE_PRICE, "The price"),
+                 (sr.VALUE_STATE, "The state's value for the vehicle"),
+                 (sr.VALUE_GREATER, "The greater of price and state value")),
+                t.value_rule)
+            self._radio_row(
+                "The state value applies to", "rules_value_used",
+                (("yes", "Used vehicles only"), ("no", "All vehicles")),
+                "yes" if t.value_used_only else "no")
+            self._note("With a state value, the deal screen asks for it. Type it "
+                       "from your state's own lookup.", fg="#444444")
 
         def _collect_state_rules(self) -> None:
             mode = self.vars["rules_mode"].get()
@@ -563,6 +605,13 @@ if TK_AVAILABLE:
                 taxed=frozenset(c for c, var in self.taxed_vars.items() if var.get()),
                 lease_tax=v("rules_lease_tax") or sr.LEASE_MONTHLY,
                 lease_reduction_taxed=v("rules_lease_reduction") == "yes",
+                bands=mc.parse_bands(self.shape_texts["bands"].get("1.0", "end")),
+                brackets=mc.parse_brackets(self.shape_texts["brackets"].get("1.0", "end")),
+                brackets_used_only=v("rules_brackets_used") == "yes",
+                classes=mc.parse_classes(self.shape_texts["classes"].get("1.0", "end")),
+                min_tax=dollars("rules_min_tax", "Least tax per deal"),
+                value_rule=v("rules_value_rule") or sr.VALUE_PRICE,
+                value_used_only=v("rules_value_used") != "no",
             ))
 
         # -- Step 0.7: local tax rates, and whether the store leases ----
@@ -654,7 +703,11 @@ if TK_AVAILABLE:
             entry = self.wizard.check_entry(kind)
             if kind == mc.KIND_LEASE:
                 return mc.LEASE_FIELDS, mc.LEASE_DMS_FIELDS, entry
-            return mc.RETAIL_FIELDS, mc.RETAIL_DMS_FIELDS, entry
+            fields = mc.RETAIL_FIELDS
+            rules = self.wizard.rules
+            if rules is not None and rules.uses_vehicle_details:
+                fields = fields + mc.RETAIL_SHAPE_FIELDS
+            return fields, mc.RETAIL_DMS_FIELDS, entry
 
         def _math_section(self, kind: str) -> None:
             fields, dms_fields, entry = self._math_specs(kind)

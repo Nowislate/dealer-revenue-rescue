@@ -53,6 +53,14 @@ ROLE_FI = "fi"
 ROLE_SALES = "sales"
 ROLES = (ROLE_ADMIN, ROLE_MANAGER, ROLE_FI, ROLE_SALES)
 
+# Shown where the first admin is made (Lane, 2026-11-24, decision 29).
+PIN_WARNING = (
+    "Don't lose or forget your PIN. Make a second admin right after this "
+    "one. Re-installing the app does not reset a PIN; if every admin "
+    "forgets, IT must reset the accounts file and every account is made "
+    "again."
+)
+
 ACTION_MANAGE_USERS = "manage_users"
 ACTION_APPROVE_PRESET = "approve_preset"
 ACTION_CERTIFY_DEAL = "certify_deal"
