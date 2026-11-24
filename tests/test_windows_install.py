@@ -126,6 +126,68 @@ class InstallerTests(unittest.TestCase):
         self.assertIn('Damaged or changed: src/dealerpaperwork/tax_engine.py', output)
         self.assertFalse(self.target.exists())
 
+    def test_extra_file_in_program_folder_is_refused_before_anything_changes(self):
+        (self.source / 'src' / 'dealerpaperwork' / 'sitecustomize.py').write_text(
+            'raise SystemExit("planted")\n', encoding='utf-8')
+        from unittest import mock
+        with mock.patch.object(install, 'check_python', return_value=[]):
+            code, output = self.run_install()
+        self.assertEqual(code, 1)
+        self.assertIn('Not part of the release: src/dealerpaperwork/sitecustomize.py', output)
+        self.assertFalse(self.target.exists())
+
+    def test_extra_test_file_cached_bytecode_and_top_level_file_are_all_named(self):
+        (self.source / 'tests' / 'test_planted.py').write_text('import os\n', encoding='utf-8')
+        cache = self.source / 'src' / 'dealerpaperwork' / '__pycache__'
+        cache.mkdir()
+        (cache / 'tax_engine.cpython-312.pyc').write_bytes(b'\x00' * 16)
+        (self.source / 'notes.txt').write_text('extra', encoding='utf-8')
+        _, problems = install.verify_release(self.source)
+        self.assertEqual(sorted(p for p in problems if p.startswith('Not part of')), [
+            'Not part of the release: notes.txt',
+            'Not part of the release: src/dealerpaperwork/__pycache__/tax_engine.cpython-312.pyc',
+            'Not part of the release: tests/test_planted.py',
+        ])
+
+    def test_clean_release_has_no_problems_and_manifest_itself_is_allowed(self):
+        manifest, problems = install.verify_release(self.source)
+        self.assertEqual(problems, [])
+        self.assertTrue(manifest['files'])
+
+    def test_manifest_path_that_leaves_the_folder_is_refused(self):
+        path = self.source / install.MANIFEST_NAME
+        manifest = json.loads(path.read_text(encoding='utf-8'))
+        manifest['files'].append({'path': '../outside.py', 'sha256': '0' * 64, 'size': 0})
+        path.write_text(json.dumps(manifest), encoding='utf-8')
+        _, problems = install.verify_release(self.source)
+        self.assertIn('Unsafe path in the manifest: ../outside.py', problems)
+
+    def test_install_copies_only_listed_program_files(self):
+        # Even if verification were bypassed, an unlisted file never reaches app.
+        (self.source / 'src' / 'dealerpaperwork' / 'planted.py').write_text('x = 1\n', encoding='utf-8')
+        manifest = install.read_manifest(self.source)
+        app = install.install_app(self.source, Path(self.tmp.name) / 'direct', manifest, Path(sys.executable))
+        self.assertFalse((Path(app) / 'dealerpaperwork' / 'planted.py').exists())
+        copied = sorted('src/' + p.relative_to(app).as_posix()
+                        for p in (Path(app) / 'dealerpaperwork').rglob('*') if p.is_file())
+        listed = sorted(e['path'] for e in manifest['files'] if e['path'].startswith('src/dealerpaperwork/'))
+        self.assertEqual(copied, listed)
+
+    def test_release_test_run_leaves_no_unlisted_files(self):
+        # INSTALL.cmd may run twice from one folder (--skip-tests reinstall);
+        # the first test run must not leave __pycache__ or output behind.
+        from unittest import mock
+        seen = {}
+
+        def fake_run(args, **kwargs):
+            seen['args'], seen['env'] = args, kwargs.get('env', {})
+            return subprocess.CompletedProcess(args, 0, 'OK', '')
+        with mock.patch.object(install.subprocess, 'run', side_effect=fake_run):
+            ok, _ = install.run_tests(self.source)
+        self.assertTrue(ok)
+        self.assertIn('-B', seen['args'])
+        self.assertEqual(seen['env'].get('PYTHONDONTWRITEBYTECODE'), '1')
+
     def test_skipped_tests_are_recorded_and_origin_check_is_named(self):
         from unittest import mock
         with mock.patch.object(install, 'check_python', return_value=[]):

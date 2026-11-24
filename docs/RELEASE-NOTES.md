@@ -8,6 +8,16 @@ certifies the numbers, and the store prints the deal on its own forms and
 blank letter paper. No AI. No internet connection. A fresh install holds
 no dealer name, fee or rate.
 
+## What changed in 1.0.2
+
+- The installer refuses any file in the unzipped folder that its
+  manifest does not list, and names each one. Before, it checked only
+  the listed files.
+- The installer copies only the program files the manifest lists.
+- The README has a section for IT approvers: what the installer runs,
+  plain-text data files, unencrypted backups, the copy a restore keeps,
+  printing through Windows, and no automatic update.
+
 ## What changed in 1.0.1
 
 - The setup network check's description now says exactly what it does:

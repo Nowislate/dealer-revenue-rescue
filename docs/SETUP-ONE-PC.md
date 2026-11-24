@@ -238,8 +238,10 @@ IF SOMETHING GOES WRONG
   Click Next, then Install. Run INSTALL.cmd again.
 
 "The release copy is not intact"
-  The zip was damaged while copying. Copy it from the USB stick again,
-  extract it again, and run INSTALL.cmd again.
+  The zip was damaged while copying, or a file was added to the
+  extracted folder ("Not part of the release"). Delete the extracted
+  folder. Copy the zip from the USB stick again, check its SHA-256,
+  extract it to a new folder, and run INSTALL.cmd again.
 
 "The test suite failed on this PC"
   Nothing was installed. Take a photo of the black window and send it
