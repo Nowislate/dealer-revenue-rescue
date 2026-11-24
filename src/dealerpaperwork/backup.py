@@ -229,16 +229,10 @@ def restore_backup(
             + "; ".join(problems)
         )
     root = Path(data_root)
-    # The destination's installation identity never comes from a backup.
-    identity_path = root / "data/installation.json"
-    local_identity = identity_path.read_bytes() if identity_path.exists() else None
-    pre_restore: Optional[Path] = None
-    if root.exists() and any(root.iterdir()):
-        stamp = _now().strftime("%Y%m%d-%H%M%S")
-        pre_restore = root.with_name(f"{root.name}.pre-restore-{stamp}")
-        shutil.move(str(root), str(pre_restore))
-    root.mkdir(parents=True, exist_ok=True)
-    restored = 0
+    # Read and check every entry BEFORE the store is moved aside: the zip
+    # may live inside the store (store\backups, where the installer puts
+    # its before-install backup), and it moves with the store.
+    entries: list[tuple[Path, bytes]] = []
     with zipfile.ZipFile(Path(zip_path)) as archive:
         for name in archive.namelist():
             if name in (MANIFEST_NAME, "data/installation.json") or name.endswith("/"):
@@ -250,9 +244,22 @@ def restore_backup(
                     f"Refusing to extract {name!r}: it points outside "
                     "the data folder."
                 )
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(archive.read(name))
-            restored += 1
+            entries.append((Path(name), archive.read(name)))
+    # The destination's installation identity never comes from a backup.
+    identity_path = root / "data/installation.json"
+    local_identity = identity_path.read_bytes() if identity_path.exists() else None
+    pre_restore: Optional[Path] = None
+    if root.exists() and any(root.iterdir()):
+        stamp = _now().strftime("%Y%m%d-%H%M%S")
+        pre_restore = root.with_name(f"{root.name}.pre-restore-{stamp}")
+        shutil.move(str(root), str(pre_restore))
+    root.mkdir(parents=True, exist_ok=True)
+    restored = 0
+    for relative, data in entries:
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(data)
+        restored += 1
     if local_identity is not None:
         identity_path.parent.mkdir(parents=True, exist_ok=True)
         identity_path.write_bytes(local_identity)

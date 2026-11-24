@@ -1,7 +1,7 @@
 """Dealer Revenue Rescue (package name: dealerpaperwork).
 
-A Windows, local-network-only backup for printing transaction paperwork
-when the DMS and CRM are down. Stage 1 is the calculation core: deal
+A Windows backup for printing transaction paperwork when the DMS and
+CRM are down. It makes no network connection. Stage 1 is the calculation core: deal
 data model, Florida retail tax engine, and preset approval gating.
 Stage 2 adds the first-run setup wizard (Step 0): UI-independent state
 machine in setup_wizard.py, Tkinter driver in setup_ui.py, printer and
@@ -71,4 +71,4 @@ __all__ = [
     "validate_preset",
 ]
 
-__version__ = "1.0.2"
+__version__ = "1.0.3"

@@ -112,6 +112,34 @@ class TestRestore(BackupTestCase):
             '{"state": "broken"}',
         )
 
+    def test_restore_from_a_zip_inside_the_store_itself(self):
+        # The installer writes its before-install backup to store\backups,
+        # and ADMIN_GUIDE says to restore it to roll back. The store moves
+        # aside during a restore, taking that zip with it.
+        inside = self.data_root / "backups"
+        zip_path = create_backup(self.data_root, inside, label="before-install-1.0.2")
+        (self.data_root / "config" / "setup.json").write_text('{"state": "broken"}', encoding="utf-8")
+        summary = restore_backup(zip_path, self.data_root)
+        self.assertEqual(summary["files_restored"], len(FILES))
+        for relative, content in FILES.items():
+            self.assertEqual((self.data_root / relative).read_text(encoding="utf-8"), content)
+        pre = Path(summary["pre_restore_copy"])
+        self.assertTrue((pre / "backups" / zip_path.name).is_file())
+
+    def test_restore_refuses_an_escaping_entry_before_touching_the_store(self):
+        zip_path = create_backup(self.data_root, self.dest)
+        with zipfile.ZipFile(zip_path, "a") as archive:
+            archive.writestr("../escape.txt", "x")
+        from unittest import mock
+        with mock.patch("dealerpaperwork.backup.verify_backup", return_value=(True, [])):
+            with self.assertRaises(BackupError):
+                restore_backup(zip_path, self.data_root)
+        self.assertEqual(
+            (self.data_root / "config" / "setup.json").read_text(encoding="utf-8"),
+            FILES["config/setup.json"],
+        )
+        self.assertEqual(list(Path(self.tmp.name).glob("app.pre-restore-*")), [])
+
     def test_restore_refuses_a_tampered_backup(self):
         zip_path = create_backup(self.data_root, self.dest)
         tampered = Path(self.tmp.name) / "tampered.zip"

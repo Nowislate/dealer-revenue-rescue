@@ -278,3 +278,9 @@ other way round.
     the release's code, data files are plain text, backups are not
     encrypted). The public repository takes 1.0.2 as a new commit on its
     history; no private history is published.
+27. **Release 1.0.3 (Lane, 2026-11-24).** Release 1.0.3 publishes the
+    restore fix: a restore reads and checks the whole backup before it
+    moves the store aside, so the installer's before-install backup in
+    `store\backups` restores as the administrator guide says. It also
+    carries four README corrections. The public repository takes 1.0.3
+    as a new commit on its history; no private history is published.

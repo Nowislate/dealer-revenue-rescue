@@ -2,7 +2,7 @@
 
 Print your deal paperwork when the DMS, CRM or internet is down.
 
-Current as of November 24, 2026 (version 1.0.2). This one guide replaces
+Current as of November 24, 2026 (version 1.0.3). This one guide replaces
 the earlier versioned guides (`ADMIN_GUIDE-native-safety-v1*.md` and
 `ADMIN_GUIDE-native-form-images-v1*.md`); git history keeps them.
 

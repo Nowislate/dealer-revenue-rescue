@@ -8,6 +8,16 @@ certifies the numbers, and the store prints the deal on its own forms and
 blank letter paper. No AI. No internet connection. A fresh install holds
 no dealer name, fee or rate.
 
+## What changed in 1.0.3
+
+- Restoring the backup the installer makes before each install now
+  works. Before, a restore from a zip inside the store folder stopped
+  partway and left the app empty; the data stayed safe in the folder
+  beside the store. A backup restored from a USB stick was not affected.
+- The README corrects four points: one demo form ships, the installer
+  runs the release's own tests, PINs have no minimum length or lockout,
+  and the audit log is a plain file.
+
 ## What changed in 1.0.2
 
 - The installer refuses any file in the unzipped folder that its
@@ -46,7 +56,7 @@ Windows and on Linux, and this release was refused unless both matched.
 Follow `READ-ME-FIRST.txt` inside the zip (the same steps as
 `docs/SETUP-ONE-PC.md`). In short: install Python 3.10 or newer, extract
 the zip, double-click `INSTALL.cmd`. The installer checks every file,
-runs the full test suite on that PC, and installs to
+runs the release's test suite on that PC, and installs to
 `C:\DealerRevenueRescue`.
 
 ## Before you rely on it
