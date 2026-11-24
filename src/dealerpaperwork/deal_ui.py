@@ -48,6 +48,7 @@ except Exception:  # pragma: no cover - exercised only without Tk
     messagebox = None  # type: ignore[assignment]
     TK_AVAILABLE = False
 
+from . import county_field
 from .audit import AuditLog
 from .deal_flow import (
     DEFAULT_DEALS_DIR,
@@ -334,8 +335,11 @@ if TK_AVAILABLE:
             self._field("City", "buyer_city", b.city)
             self._field("State", "buyer_state", b.state)
             self._field("ZIP code", "buyer_zip", b.zip_code)
-            self._field(
-                "Residence county *", "buyer_county", b.residence_county
+            county_field.build(
+                tk, ttk, self.body, label="Residence county *", label_width=28,
+                zip_var=self.vars["buyer_zip"],
+                county_var=self.var("buyer_county", b.residence_county),
+                enabled=county_field.uses_florida_lookup(self.session.preset),
             )
             self._field("Buyer phone", "buyer_phone", b.phone)
             self._field("Co-buyer street address", "co_street", b.co_buyer_street_address)
@@ -345,7 +349,9 @@ if TK_AVAILABLE:
             tk.Label(
                 self.body,
                 text="The county is where the buyer registers the "
-                "vehicle; it sets the county surtax rate.",
+                "vehicle; it sets the county surtax rate. A Florida ZIP "
+                "fills it, or lists the counties when the ZIP crosses a "
+                "county line.",
                 justify="left", anchor="w", wraplength=600, fg="#444444",
             ).pack(fill="x", pady=6)
 

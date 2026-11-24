@@ -2,7 +2,7 @@
 
 Print your deal paperwork when the DMS, CRM or internet is down.
 
-Current as of November 24, 2026 (version 1.1.0). This one guide replaces
+Current as of November 24, 2026 (version 1.2.0). This one guide replaces
 the earlier versioned guides (`ADMIN_GUIDE-native-safety-v1*.md` and
 `ADMIN_GUIDE-native-form-images-v1*.md`); git history keeps them.
 
@@ -89,10 +89,26 @@ setup: the app cannot run that state yet. The sheet is
 saved in the preset (`state_rules`), and the worksheet names each line
 by how the sheet treats it ("Local tax", "Trade-in credit against tax").
 
-Step 0.7 takes the store's local rates. A Florida store types its county surtax rates from the current Florida
-DR-15DSS, typed as percents, one county per line (`Pinellas, 1.5`). A
+Step 0.7 takes the store's local rates. A Florida store clicks a year to
+fill all 67 counties from the built-in DR-15DSS table
+(`src/dealerpaperwork/tables/fl_surtax_rates.json`, with its source on
+each year), or types them as percents, one county per line
+(`Pinellas, 1`). A table loaded unchanged carries its year: Florida
+county surtaxes change on 1 January, so a deal in any other year cannot
+be certified until a manager loads that year's table and approves it.
+Changing any line makes it the store's own typed table, with no year. A
 buyer from a county not on the list cannot be certified until a manager
-adds it. The same step asks whether the store writes leases; a store
+adds it.
+
+On a Florida deal, the buyer's ZIP fills a blank county when the ZIP
+sits in one county (`tables/fl_zip_counties.json`, from the Census
+Bureau's 2020 ZIP-to-county file). When the ZIP crosses a county line,
+the county box lists those counties and the clerk picks the one where
+the buyer registers the vehicle; the app never picks. A typed county the
+ZIP does not touch gets a warning line. The tax always comes from the
+approved rate for the county on the deal. The yearly update: a release
+adds the new year's table (`scripts/build_fl_zip_counties.py` rebuilds
+the ZIP file when the Census publishes a new one). The same step asks whether the store writes leases; a store
 that does enters the lessor and the lease title holder, which every
 lease deal needs.
 

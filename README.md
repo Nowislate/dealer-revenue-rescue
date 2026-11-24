@@ -35,8 +35,11 @@ person can read every line and confirm the points above.
 
 1. **Setup, once, before an outage.** Store details, fees, the printer
    and its tray, the state's tax and tag rules, and the local tax rates.
-   A Florida store picks the built-in Florida rules and types its county
-   surtax rates from the current DR-15DSS. A store in any other US state
+   A Florida store picks the built-in Florida rules and fills all 67
+   county surtax rates from the built-in DR-15DSS table for the year, or
+   types them. On a deal, the buyer's Florida ZIP fills the county; a ZIP
+   that crosses a county line lists its counties and the clerk picks.
+   A store in any other US state
    answers plain questions about how its state taxes a deal. A
    manager approves the set by name. Nothing runs on unapproved values.
 2. **A math check against your own DMS.** During setup a manager types in
@@ -90,8 +93,13 @@ Read this list before you rely on it.
 - **No one-pay (single payment) lease.** Monthly-payment leases only.
 - **Some Florida items stay with the store.** The app does not hard-code
   them; the store sets or confirms each one:
-  - County surtax rates and the plate fee are setup values. Enter them
-    from the current DR-15DSS and the current fee schedule.
+  - County surtax rates and the plate fee are setup values. The app
+    carries each year's DR-15DSS county table as data; a manager loads
+    it and approves it by name. Rates change on 1 January: a deal in a
+    year other than the loaded table's cannot be certified until a
+    manager loads that year's table (a new release carries it). Rates
+    typed by hand carry no year. Enter the plate fee from the current
+    fee schedule.
   - When a trade brings the taxable amount under $5,000, the worksheet
     shows a warning. Certification waits until a named user
     acknowledges it, and the acknowledgment is logged.

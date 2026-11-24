@@ -322,3 +322,23 @@ other way round.
     driver, the five tax shapes, the PIN warning and the support line.
     The public repository takes 1.1.0 as a new commit on its history; no
     private history is published.
+32. **Built-in Florida county rates and the buyer's ZIP; release 1.2.0
+    (Lane, 2026-11-24).** Lane asked: "Now that we have the taxation
+    rules and regs available, can't it calculate based on zip and
+    county of the customer information?" He picked A in the project
+    thread, 22:43 UTC: merge it and publish 1.2.0. This amends decision
+    10's last sentence. Florida county surtax rates ship as dated data,
+    one table per calendar year, each naming its source (the DR-15DSS,
+    or the Department's notices until the next form is out), in
+    `src/dealerpaperwork/tables/`. A manager loads a year's table at
+    setup and approves it by name (decision 2); nothing in it reaches a
+    deal before approval, and the code holds no rate. A table loaded
+    unchanged carries its year, and a deal dated in another year cannot
+    be certified until a manager loads that year's table; any edit
+    makes it the store's own typed table, with no year. The buyer's
+    Florida ZIP fills the county when the ZIP sits in one county; when
+    it crosses a county line the clerk picks from its counties and the
+    app never picks. The tax always comes from the approved rate for the
+    county on the deal. The setup math check (decision 21) is unchanged.
+    The public repository takes 1.2.0 as a new commit on its history; no
+    private history is published.

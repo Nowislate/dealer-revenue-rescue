@@ -47,6 +47,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
 
+from . import fl_tables
 from .audit import (
     EVENT_CERTIFICATION_INVALIDATED,
     EVENT_DEAL_CERTIFIED,
@@ -58,7 +59,7 @@ from .models import (
     ZERO, Buyer, D, DealInputs, DealResult, TradeIn, Vehicle,
     buyer_from_dict, buyer_to_dict, vehicle_from_dict, vehicle_to_dict,
 )
-from .presets import Preset, require_approved
+from .presets import Preset, rates_year_from, require_approved
 from .state_rules import rules_from_dict
 from .presets import _lease_from_dict as _preset_lease_from_dict
 from .presets import _profile_from_dict as _preset_profile_from_dict
@@ -264,6 +265,7 @@ def preset_from_dict(data: dict) -> Preset:
             county: D(rate)
             for county, rate in data.get("county_surtax_rates", {}).items()
         },
+        county_rates_year=rates_year_from(data),
         rules=rules_from_dict(data.get("state_rules")),
         version=str(data.get("version", "1")),
         approved_by=data.get("approved_by"),
@@ -780,6 +782,9 @@ class DealSession:
                 "deals. Certification requires the certify-deal "
                 "permission (admin, manager, or F&I)."
             )
+        year_problem = fl_tables.rates_year_problem(self.preset.county_rates_year)
+        if year_problem:
+            raise CertificationError(year_problem)
         for step in (DealStep.BUYER, DealStep.VEHICLE, DealStep.TRADE):
             errors = self.validate_step(step)
             if errors:

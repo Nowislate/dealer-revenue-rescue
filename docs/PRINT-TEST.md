@@ -12,14 +12,14 @@ form, aligned, on a real printer. The photos at the end are the evidence.
    installed. The app draws each page through that driver, so any
    printer Windows can print to works.
 3. Twenty sheets of plain letter paper.
-4. A USB stick holding the release zip (`DealerRevenueRescue-1.1.0.zip`) and
+4. A USB stick holding the release zip (`DealerRevenueRescue-1.2.0.zip`) and
    the Python 3 Windows installer from python.org.
 5. A phone camera.
 
 ## Steps
 
 1. **Install.** Follow [SETUP-ONE-PC.md](SETUP-ONE-PC.md), Parts 1 to 3.
-   You should see "DONE. Dealer Revenue Rescue 1.1.0 is installed." Photograph
+   You should see "DONE. Dealer Revenue Rescue 1.2.0 is installed." Photograph
    that window.
 2. **Set up with the sample amounts.** Follow Part 4. At Step 0.2, use
    a dealer fee of 1,199 and an electronic tag fee of 199. At Step 0.6,

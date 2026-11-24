@@ -119,7 +119,8 @@ PART 4. FIRST-TIME SETUP IN THE APP
 
 A manager does this once. Have these ready:
 - The store's fees.
-- The county surtax rates from the current Florida form DR-15DSS.
+- Florida: nothing to gather for county rates; the app carries the
+  DR-15DSS table. Other states: your local tax rates.
 - One recent finance deal open in the DMS (and one lease, if the store
   leases), with its tax, amount financed and payment showing.
 
@@ -164,9 +165,11 @@ A manager does this once. Have these ready:
 
 11. Step 0.7: type the local tax rates, one place per line, as the
     name, a comma, and the rate in percent. Example:
-    Pinellas, 1.5
-    A Florida store types its county surtax rates from the current
-    DR-15DSS. Put your own place first, then every place your buyers
+    Pinellas, 1
+    A Florida store clicks the year (for example 2026) to fill all 67
+    counties from the built-in DR-15DSS table, checks them, and moves
+    on. Changing any line makes it the store's own typed table. Other
+    states: put your own place first, then every place your buyers
     usually register in. Answer whether the store writes leases. If
     yes, type the lessor and the lease title holder. Click Next.
 

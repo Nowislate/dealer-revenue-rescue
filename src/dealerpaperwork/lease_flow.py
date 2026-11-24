@@ -41,6 +41,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional, Union
 
+from . import fl_tables
 from .audit import (
     EVENT_CERTIFICATION_INVALIDATED,
     EVENT_DEAL_CERTIFIED,
@@ -585,6 +586,9 @@ class LeaseDealSession:
                 "deals. Certification requires the certify-deal "
                 "permission (admin, manager, or F&I)."
             )
+        year_problem = fl_tables.rates_year_problem(self.preset.county_rates_year)
+        if year_problem:
+            raise CertificationError(year_problem)
         for step in (LeaseStep.BUYER, LeaseStep.VEHICLE):
             errors = self.validate_step(step)
             if errors:

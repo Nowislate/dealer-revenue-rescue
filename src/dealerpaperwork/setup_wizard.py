@@ -56,6 +56,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Callable, Optional, Union
 
+from . import fl_tables
 from . import math_check as mc
 from .models import D, DealerProfile
 from .network_check import NetworkCheckResult, check_lan
@@ -226,6 +227,8 @@ class SetupWizard:
         # store's own answers. None until the store picks.
         self.rules: Optional[StateRules] = None
         self.county_surtax_rates: dict[str, Decimal] = {}
+        # Decision 32: the built-in table's year, when the rates came from it.
+        self.county_rates_year: Optional[int] = None
         # Step 0.7: does the store lease? None until answered.
         self.store_leases: Optional[bool] = None
         self.lease_preset: LeasePreset = LeasePreset()
@@ -331,13 +334,22 @@ class SetupWizard:
         *,
         state_tax_rate: Optional[Decimal] = None,
         county_surtax_rates: Optional[dict[str, Decimal]] = None,
+        county_rates_year: Optional[int] = None,
     ) -> None:
+        """Step 0.7. ``county_rates_year`` is set only when the rates are
+        exactly one year's built-in Florida table (decision 32); any edit
+        makes them the store's own typed table, with no year."""
         if state_tax_rate is not None:
             self.state_tax_rate = D(state_tax_rate)
         if county_surtax_rates is not None:
             self.county_surtax_rates = {
                 county: D(rate) for county, rate in county_surtax_rates.items()
             }
+            self.county_rates_year = None
+            if county_rates_year is not None:
+                edition = fl_tables.edition_for(county_rates_year)
+                if edition is not None and edition.rates == self.county_surtax_rates:
+                    self.county_rates_year = county_rates_year
 
     def set_store_leases(
         self,
@@ -478,6 +490,7 @@ class SetupWizard:
             rules=self.rules or FLORIDA,
             state_tax_rate=self.state_tax_rate,
             county_surtax_rates=dict(self.county_surtax_rates),
+            county_rates_year=self.county_rates_year,
             version="setup-1",
             approved_by=approved_by if approved_by is not None else self.approved_by,
             approved_at=_now_iso() if (approved_by or self.approved_by) else None,
@@ -820,7 +833,7 @@ def lease_preset_to_dict(lease: Optional[LeasePreset]) -> Optional[dict]:
 
 
 def preset_to_dict(preset: Preset) -> dict:
-    return {
+    data = {
         "dealer": profile_to_dict(preset.dealer),
         "lease": lease_preset_to_dict(preset.lease),
         "state_tax_rate": str(preset.state_tax_rate),
@@ -833,6 +846,11 @@ def preset_to_dict(preset: Preset) -> dict:
         "approved_by": preset.approved_by,
         "approved_at": preset.approved_at,
     }
+    # Decision 32: written only when set, so a preset saved before it
+    # saves exactly as it did.
+    if preset.county_rates_year is not None:
+        data["county_rates_year"] = preset.county_rates_year
+    return data
 
 
 def setup_record_to_dict(record: SetupRecord) -> dict:

@@ -36,6 +36,7 @@ except Exception:  # pragma: no cover - exercised only without Tk
     messagebox = None  # type: ignore[assignment]
     TK_AVAILABLE = False
 
+from . import fl_tables
 from . import math_check as mc
 from . import state_rules as sr
 from .models import D, DealerProfile
@@ -629,14 +630,17 @@ if TK_AVAILABLE:
                 )
             else:
                 self._note(
-                    "Enter the county surtax rates from the current-year Florida "
-                    "form DR-15DSS. Put your own county first, then every county "
-                    "your buyers usually register in. One county per line: the "
-                    "name, a comma, and the rate in percent. Example: Pinellas, 1.5"
+                    "County surtax rates from the Florida form DR-15DSS. Click "
+                    "the year below to fill all 67 counties from the built-in "
+                    "table, or type them: one county per line, the name, a "
+                    "comma, and the rate in percent. Example: Pinellas, 1"
                 )
             self.county_text = tk.Text(self.parent, height=8, width=60)
             self.county_text.pack(fill="x", pady=4)
             self.county_text.insert("1.0", mc.county_table_text(w.county_surtax_rates))
+            self.loaded_rates_year = w.county_rates_year
+            if not w.typed_rules:
+                self._built_in_rates_row()
             self._field(
                 "State sales tax (%) *", "state_tax_pct",
                 format((w.state_tax_rate * 100).normalize(), "f"),
@@ -657,10 +661,42 @@ if TK_AVAILABLE:
             self._field("Lessor name (if yes)", "lessor_name", lp.lessor_name or "")
             self._field("Lease title holder (if yes)", "title_holder", lp.title_holder or "")
 
+        def _built_in_rates_row(self) -> None:
+            """Decision 32: fill all 67 counties from a year's built-in
+            DR-15DSS table. The manager still reviews and approves them."""
+            row = tk.Frame(self.parent)
+            row.pack(fill="x", pady=(2, 2))
+            tk.Label(row, text="Or fill every county from the built-in table:",
+                     anchor="w").pack(side="left")
+            for edition in fl_tables.editions():
+                tk.Button(row, text=str(edition.year),
+                          command=lambda e=edition: self._fill_built_in(e)).pack(side="left", padx=2)
+            self.rates_source_label = tk.Label(self.parent, text=self._rates_source_text(),
+                                               justify="left", anchor="w", wraplength=640,
+                                               fg="#444444")
+            self.rates_source_label.pack(fill="x")
+
+        def _rates_source_text(self) -> str:
+            edition = (fl_tables.edition_for(self.loaded_rates_year)
+                       if self.loaded_rates_year is not None else None)
+            if edition is None:
+                return ("These rates are typed by hand. Deals use them in any year "
+                        "until a manager changes them.")
+            return (f"Loaded: {edition.label}. Source: {edition.source} Deals in "
+                    f"another year cannot be certified on these rates. Changing "
+                    "any line makes this your own typed table.")
+
+        def _fill_built_in(self, edition) -> None:
+            self.county_text.delete("1.0", "end")
+            self.county_text.insert("1.0", fl_tables.table_text(edition))
+            self.loaded_rates_year = edition.year
+            self.rates_source_label.configure(text=self._rates_source_text())
+
         def _collect_tax_rates(self) -> None:
             rates = mc.parse_county_table(self.county_text.get("1.0", "end"))
             state = mc.parse_percent(self.vars["state_tax_pct"].get(), label="State sales tax")
-            self.wizard.set_tax_data(state_tax_rate=state, county_surtax_rates=rates)
+            self.wizard.set_tax_data(state_tax_rate=state, county_surtax_rates=rates,
+                                     county_rates_year=getattr(self, "loaded_rates_year", None))
             answer = self.leases_var.get()
             if answer in ("yes", "no"):
                 self.wizard.set_store_leases(
