@@ -5,6 +5,9 @@ rem Makes no network connection. Needs Python 3.10+ with Tcl/Tk from python.org.
 setlocal
 pushd "%~dp0"
 set "PYTHONPATH=%~dp0src"
+rem Write no __pycache__ into the release folder: the installer refuses
+rem any file its manifest does not list.
+set "PYTHONDONTWRITEBYTECODE=1"
 set "PYCMD="
 py -3 -c "import sys" >nul 2>nul
 if not errorlevel 1 set "PYCMD=py -3"

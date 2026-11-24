@@ -117,8 +117,10 @@ release zip as `READ-ME-FIRST.txt`. In short:
    installer's own file check proves the copy is undamaged, not where it
    came from.
 3. Extract it and double-click `INSTALL.cmd`. The installer checks every
-   file against its manifest, runs the full test suite on that PC, and
-   installs to `C:\DealerRevenueRescue`.
+   file against its manifest and refuses any file the manifest does not
+   list. It then runs the full test suite on that PC and installs to
+   `C:\DealerRevenueRescue`. It copies only the program files the
+   manifest lists.
 4. Open "Dealer Revenue Rescue" from the desktop. Create two admin accounts,
    accept the notice, and run Setup.
 5. Unplug the network. Use that PC for nothing else.
@@ -173,6 +175,39 @@ Everything is under `C:\DealerRevenueRescue\store`:
 | `data\documents\` | The store's form images and field placements |
 | `data\drill_runs.json` | Practice drill history |
 | `backups\` | Backup zips |
+
+## What an IT approver should know
+
+These points sit outside the claims above. Read them before you sign off.
+
+- **The installer runs the release's code.** Step 3 runs the release's
+  own test suite with the installing user's rights, before anything is
+  copied. Check the zip's SHA-256 first.
+- **Nothing is signed.** The zip's SHA-256 on the release page is the
+  only origin check. The manifest inside the zip proves the copy is
+  complete and unchanged, with no files added, not who made it.
+- **Data files are plain text.** Deals, setup and the audit log are JSON
+  files anyone with access to that PC's folder can read. Passwords are
+  stored as salted PBKDF2-SHA256 hashes. Limit who can sign in to the PC
+  and who can open `C:\DealerRevenueRescue\store`.
+- **Backups are not encrypted.** A backup zip holds the store's deals
+  and customer details. Whoever holds the USB stick holds that data.
+  Store the stick the way you store paper deal jackets.
+- **A restore keeps the old data beside the store folder.** It moves the
+  current data to `C:\DealerRevenueRescue\store.pre-restore-<time>`
+  and never deletes it. Delete that folder by hand when you no longer
+  need it.
+- **Printing hands deal data to Windows.** The Windows print spooler
+  writes its own spool files. If you pick a shared or network printer,
+  Windows sends the deal across the network. Pick a printer plugged
+  into the PC.
+- **Python comes first.** Someone downloads and installs Python from
+  python.org before the installer runs. The installer itself downloads
+  nothing.
+- **There is no automatic update.** A new version arrives only when IT
+  downloads a new release and runs its `INSTALL.cmd`.
+- **The installer adds a desktop shortcut.** Use `--no-shortcut` to skip
+  it.
 
 ## For developers
 

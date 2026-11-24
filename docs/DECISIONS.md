@@ -271,3 +271,10 @@ other way round.
     and `install.json` records whether the installer's tests ran. The
     public repository takes 1.0.1 as a new commit on its one-commit
     history; no private history is published.
+26. **Release 1.0.2 (Lane, 2026-11-24).** Release 1.0.2 publishes the
+    installer fix from an outside review: the installer refuses any file
+    its manifest does not list and copies only the listed program files.
+    The README names what an IT approver should know (the installer runs
+    the release's code, data files are plain text, backups are not
+    encrypted). The public repository takes 1.0.2 as a new commit on its
+    history; no private history is published.

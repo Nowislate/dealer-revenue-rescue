@@ -65,3 +65,11 @@ jobs:
           & "$($release.FullName)\INSTALL.cmd" --target $target --skip-tests --no-shortcut
           if ($LASTEXITCODE -ne 0) { throw 'reinstall failed' }
           if (-not (Test-Path "$target\app-previous\launch.pyw")) { throw 'app-previous missing after reinstall' }
+          # Tamper test: a file the manifest does not list must stop the install.
+          Set-Content -Path "$($release.FullName)\src\dealerpaperwork\planted.py" -Value 'raise SystemExit(9)'
+          & "$($release.FullName)\INSTALL.cmd" --target $target --skip-tests --no-shortcut
+          if ($LASTEXITCODE -eq 0) { throw 'install accepted a file the manifest does not list' }
+          if (Test-Path "$target\app\dealerpaperwork\planted.py") { throw 'planted file reached the install' }
+          Write-Host 'Tamper test: extra file refused'
+          # The refused install left exit code 1 behind; the step itself passed.
+          exit 0

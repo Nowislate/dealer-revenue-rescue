@@ -13,6 +13,9 @@ What it does, in order:
    need it).
 2. Checks every file in the release against ``release-manifest.json``
    (SHA-256), so a damaged USB copy is refused before anything changes.
+   Any file in the release folder that the manifest does not list is
+   refused too, so nothing extra can ride along into the test run or the
+   installed program. Step 5 also copies only the listed program files.
    The manifest ships inside the zip, so this proves the copy is intact,
    not where it came from: the SHA-256 of the zip, published with the
    release, is the only origin check, and the IT team checks it before
@@ -178,13 +181,36 @@ def read_manifest(source: Path) -> dict:
             "(%s). Unzip the release again and run INSTALL.cmd from it." % (MANIFEST_NAME, exc))
 
 
+def _listed_path(relative: str) -> bool:
+    """A manifest path must stay inside the release folder."""
+    parts = relative.replace("\\", "/").split("/")
+    return bool(relative) and not relative.startswith(("/", "\\")) and ":" not in relative \
+        and all(part not in ("", ".", "..") for part in parts)
+
+
+def _release_contents(source: Path) -> set[str]:
+    """Every file (or anything that is not a folder) under source, as
+    forward-slash paths relative to it."""
+    found = set()
+    for path in Path(source).rglob("*"):
+        if not path.is_dir():
+            found.add(path.relative_to(source).as_posix())
+    return found
+
+
 def verify_release(source: Path) -> tuple[dict, list[str]]:
-    """Check every listed file's SHA-256. Returns (manifest, problems)."""
+    """Check every listed file's SHA-256, and refuse any file the manifest
+    does not list. Returns (manifest, problems)."""
     source = Path(source)
     manifest = read_manifest(source)
     problems = []
+    listed = set()
     for entry in manifest.get("files", []):
         relative = entry.get("path", "")
+        if not _listed_path(relative):
+            problems.append("Unsafe path in the manifest: " + relative)
+            continue
+        listed.add(relative)
         path = source / relative
         if not path.is_file():
             problems.append("Missing: " + relative)
@@ -192,14 +218,19 @@ def verify_release(source: Path) -> tuple[dict, list[str]]:
             problems.append("Damaged or changed: " + relative)
     if not manifest.get("files"):
         problems.append("The release manifest lists no files.")
+    for relative in sorted(_release_contents(source) - listed - {MANIFEST_NAME}):
+        problems.append("Not part of the release: " + relative)
     return manifest, problems
 
 
 def run_tests(source: Path, timeout: int = 900) -> tuple[bool, str]:
     """Run the release's own test suite with this Python."""
+    # -B: write no __pycache__ into the release folder, so a second
+    # INSTALL.cmd run from the same folder still finds only listed files.
+    env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
     result = subprocess.run(
-        [sys.executable, "-m", "unittest", "discover", "-s", "tests"],
-        cwd=str(source), capture_output=True, text=True, timeout=timeout)
+        [sys.executable, "-B", "-m", "unittest", "discover", "-s", "tests"],
+        cwd=str(source), capture_output=True, text=True, timeout=timeout, env=env)
     output = (result.stdout or "") + (result.stderr or "")
     return result.returncode == 0, output
 
@@ -233,8 +264,18 @@ def install_app(source: Path, target: Path, manifest: dict, python_exe: Path,
     staging = target / (APP_DIR + ".new")
     if staging.exists():
         shutil.rmtree(staging)
-    shutil.copytree(source / "src" / "dealerpaperwork", staging / "dealerpaperwork",
-                    ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+    # Copy only the program files the manifest lists, never the folder
+    # wholesale: a file that is not in the release never reaches app.
+    prefix = "src/"
+    program = [entry["path"] for entry in manifest.get("files", [])
+               if entry.get("path", "").startswith(prefix + "dealerpaperwork/")
+               and _listed_path(entry["path"])]
+    if not program:
+        raise InstallError("The release manifest lists no program files. Nothing was installed.")
+    for relative in program:
+        destination = staging / relative[len(prefix):]
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source / relative, destination)
     (staging / "launch.pyw").write_text(LAUNCHER, encoding="utf-8")
     record = {
         "version": manifest.get("version", ""),

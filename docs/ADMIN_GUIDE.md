@@ -2,7 +2,7 @@
 
 Print your deal paperwork when the DMS, CRM or internet is down.
 
-Current as of November 24, 2026 (version 1.0.1). This one guide replaces
+Current as of November 24, 2026 (version 1.0.2). This one guide replaces
 the earlier versioned guides (`ADMIN_GUIDE-native-safety-v1*.md` and
 `ADMIN_GUIDE-native-form-images-v1*.md`); git history keeps them.
 
@@ -34,7 +34,9 @@ tested on that PC; `app\install.json` records `"tests_run_before_install":
 false`); `--no-shortcut` skips the desktop icon.
 
 The installer's file check compares each file with `release-manifest.json`,
-which ships inside the zip. It catches a damaged copy. It cannot show where
+which ships inside the zip, and refuses any file in the release folder the
+manifest does not list. It also copies only the listed program files into
+`app`. It catches a damaged copy or an added file. It cannot show where
 the zip came from. Check the zip's SHA-256 against the release page before
 you unzip it: `Get-FileHash .\DealerRevenueRescue-<version>.zip -Algorithm SHA256`.
 
