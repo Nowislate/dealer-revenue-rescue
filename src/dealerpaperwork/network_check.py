@@ -5,11 +5,16 @@ local network?* The check answers it from the machine's own addresses:
 it looks for a non-loopback IPv4 address in a private range
 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, RFC 1918).
 
-By design (locked decision 5: local network only), the check attempts
-**no internet access and no outbound traffic at all** -- it only reads
-the addresses the operating system already assigned to this host, via
-``socket.getaddrinfo`` on the local hostname. That keeps it instant and
-safe during setup, including during an outage.
+What the check does, exactly (locked decision 5: local network only).
+It runs only when someone presses "Run network check"; the island-mode
+button makes no call at all. It asks the operating system for this
+host's own IPv4 addresses by looking up the host's own name
+(``socket.getaddrinfo(socket.gethostname())``). It opens no socket and
+no connection. Windows, the only supported platform (decision 4),
+answers a lookup of the computer's own name from the addresses already
+assigned to its network adapters. On other systems the same call
+follows the system's name settings (hosts file, and DNS if those
+settings say so), which is one reason the app is Windows only.
 
 Standard library only.
 """
@@ -90,8 +95,9 @@ def evaluate_addresses(addresses: Sequence[str]) -> NetworkCheckResult:
 
 
 def local_ipv4_addresses() -> list[str]:
-    """This host's own IPv4 addresses, from the OS. No traffic is sent:
-    resolving the local hostname is answered from local configuration."""
+    """This host's own IPv4 addresses, from the OS: a lookup of the
+    host's own name. No socket or connection is opened (see the module
+    docstring for how each platform answers the lookup)."""
     hostname = socket.gethostname()
     try:
         infos = socket.getaddrinfo(hostname, None, socket.AF_INET)

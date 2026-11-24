@@ -111,7 +111,11 @@ release zip as `READ-ME-FIRST.txt`. In short:
 1. Install Python 3.10 or newer from python.org. Keep "tcl/tk" and
    "py launcher" ticked.
 2. Download `DealerRevenueRescue-<version>.zip` from the release page. Check
-   its SHA-256 against the one published with the release.
+   its SHA-256 against the one published on that page, in PowerShell:
+   `Get-FileHash .\DealerRevenueRescue-<version>.zip -Algorithm SHA256`.
+   This is the only check that the zip came from this project. The
+   installer's own file check proves the copy is undamaged, not where it
+   came from.
 3. Extract it and double-click `INSTALL.cmd`. The installer checks every
    file against its manifest, runs the full test suite on that PC, and
    installs to `C:\DealerRevenueRescue`.
@@ -147,8 +151,10 @@ drill, who ran it, and whether the whole pack printed.
 - The code uses the Python standard library only. There are no
   third-party packages.
 - The only network code is `src/dealerpaperwork/network_check.py`. It
-  reads this PC's own address list for setup Step 0.1. It opens no
-  connection.
+  runs once, when someone presses "Run network check" in setup Step 0.1.
+  It asks Windows for this PC's own addresses by looking up the PC's own
+  name, and Windows answers from the PC's own settings. It opens no
+  connection. A PC that runs by itself never needs it.
 - Printing goes through the Windows print spooler
   (`src/dealerpaperwork/printers.py`).
 - Search the source for `urllib`, `http`, `socket` and `requests` to
@@ -188,7 +194,8 @@ or customer. Every fixture here is made up.
 
 ## Licence and disclaimer
 
-Licensed under the Apache License, Version 2.0. See `LICENSE`.
+Copyright 2026 Now is Late, Inc. Licensed under the Apache License,
+Version 2.0. See `LICENSE` and `NOTICE`.
 
 This software calculates sales tax, lease payments and amounts due. It is
 provided "as is", without warranty of any kind (Apache 2.0, sections 7

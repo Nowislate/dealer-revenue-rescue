@@ -50,7 +50,7 @@ class ReleaseBuilderTests(unittest.TestCase):
         top = 'DealerRevenueRescue-' + release.release_version() + '/'
         self.assertTrue(all(n.startswith(top) for n in names))
         inner = {n[len(top):] for n in names}
-        for required in ('INSTALL.cmd', 'READ-ME-FIRST.txt', 'LICENSE', 'release-manifest.json',
+        for required in ('INSTALL.cmd', 'READ-ME-FIRST.txt', 'LICENSE', 'NOTICE', 'release-manifest.json',
                          'src/dealerpaperwork/install.py', 'src/dealerpaperwork/app_ui.py',
                          'config/sample_preset.json'):
             self.assertIn(required, inner)
@@ -125,6 +125,22 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn('Damaged or changed: src/dealerpaperwork/tax_engine.py', output)
         self.assertFalse(self.target.exists())
+
+    def test_skipped_tests_are_recorded_and_origin_check_is_named(self):
+        from unittest import mock
+        with mock.patch.object(install, 'check_python', return_value=[]):
+            code, output = self.run_install()
+        self.assertEqual(code, 0, output)
+        record = json.loads((self.target / 'app' / 'install.json').read_text(encoding='utf-8'))
+        self.assertIs(record['tests_run_before_install'], False)
+        self.assertIn("check the zip's SHA-256 against the one on the release page", output)
+
+    def test_install_record_says_tests_ran_by_default(self):
+        target = Path(self.tmp.name) / 'direct'
+        manifest = install.read_manifest(self.source)
+        app = install.install_app(self.source, target, manifest, Path(sys.executable))
+        record = json.loads((Path(app) / 'install.json').read_text(encoding='utf-8'))
+        self.assertIs(record['tests_run_before_install'], True)
 
     def test_missing_manifest_is_refused(self):
         (self.source / install.MANIFEST_NAME).unlink()

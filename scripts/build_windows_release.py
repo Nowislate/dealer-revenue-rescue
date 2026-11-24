@@ -9,6 +9,7 @@ Writes ``dist/DealerRevenueRescue-<version>.zip``. Unzipped, it holds::
         INSTALL.cmd                double-click to install
         READ-ME-FIRST.txt          the one-PC setup guide (docs/SETUP-ONE-PC.md)
         LICENSE
+        NOTICE                     copyright holder (Apache 2.0, section 4d)
         release-manifest.json      SHA-256 of every other file
         src/dealerpaperwork/...    the program
         tests/...                  the suite INSTALL.cmd runs before installing
@@ -54,6 +55,7 @@ def release_files(repo: Path = REPO) -> list[tuple[str, bytes]]:
              _tree(repo, "src/dealerpaperwork") + _tree(repo, "tests")]
     files.append(("config/sample_preset.json", (repo / "config/sample_preset.json").read_bytes()))
     files.append(("LICENSE", (repo / "LICENSE").read_bytes()))
+    files.append(("NOTICE", (repo / "NOTICE").read_bytes()))
     guide = (repo / "docs/SETUP-ONE-PC.md").read_text(encoding="utf-8")
     files.append(("READ-ME-FIRST.txt", guide.replace("\r\n", "\n").replace("\n", "\r\n").encode("utf-8")))
     cmd = (repo / "packaging/windows/INSTALL.cmd").read_text(encoding="utf-8")
