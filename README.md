@@ -37,7 +37,7 @@ person can read every line and confirm the points above.
    and its tray, the state's tax and tag rules, and the local tax rates.
    A Florida store picks the built-in Florida rules and types its county
    surtax rates from the current DR-15DSS. A store in any other US state
-   answers twelve plain questions about how its state taxes a deal. A
+   answers plain questions about how its state taxes a deal. A
    manager approves the set by name. Nothing runs on unapproved values.
 2. **A math check against your own DMS.** During setup a manager types in
    one recent finance deal from the store's DMS, and the tax, amount
@@ -75,10 +75,16 @@ Read this list before you rely on it.
   rule sheet in setup, and setup will not finish until two of its DMS
   deals match to the cent, one with a trade and one without, plus a
   lease if it leases. No manager can override a typed-rules mismatch.
-- **Some state rules do not fit the sheet.** Tax that changes with price,
-  weight or vehicle type, a tax on a state-set value instead of the
-  price, and stacked local taxes with different limits are not
-  supported. Setup stops with a plain message instead of guessing.
+- **The rule sheet covers the common shapes of state vehicle tax.**
+  Beyond rates, local limits, trade credit and taxed charges, a store can
+  set: an extra tax on a dollar range of the price (Tennessee's shape), a
+  state rate set by the selling price (Arkansas's used-car shape), a
+  vehicle class with its own rate (Mississippi's heavy trucks), a least
+  tax per deal (Virginia's shape), and tax on the state's value for the
+  vehicle (Georgia's shape). These apply to retail deals. The app
+  cannot look up a state value: the clerk types it on the deal from the
+  state's own tool. A state whose rules still do not fit stops setup
+  with a plain message instead of guessing; tell us on GitHub.
 - **The math check proves the deals you typed, not every deal.** Keep
   checking the worksheet against what you expect on each outage deal.
 - **No one-pay (single payment) lease.** Monthly-payment leases only.
@@ -96,10 +102,11 @@ Read this list before you rely on it.
 - **No connections.** No lender portals, credit bureaus, e-contracting,
   DMS or CRM. Nothing is sent anywhere.
 - **Windows only.** Windows 10 or 11, with Python from python.org.
-- **The printer must accept PDF.** Each form goes to the printer as a PDF
-  file. Pick a printer whose specifications list PDF direct print (or PDF
-  and PostScript). Many office laser printers do; most home inkjets do
-  not.
+- **Blank letter paper only.** Each form prints as its full-page picture
+  with the deal's values on top, on plain 8.5 x 11 paper. Printing on
+  pre-printed form stock, or on an impact (dot-matrix) printer, is a
+  custom setup: contact Now is Late at
+  [nowislate.com](https://nowislate.com).
 - **Not legal or tax advice.** Have your controller check the worksheet
   against your DMS before you rely on it. See the licence and disclaimer
   below.
@@ -159,8 +166,10 @@ drill, who ran it, and whether the whole pack printed.
   It asks Windows for this PC's own addresses by looking up the PC's own
   name, and Windows answers from the PC's own settings. It opens no
   connection. A PC that runs by itself never needs it.
-- Printing goes through the Windows print spooler
-  (`src/dealerpaperwork/printers.py`).
+- Printing draws each page through the printer's own Windows driver and
+  the Windows print spooler (`src/dealerpaperwork/printers.py`). Any
+  printer Windows can print to works; the printer does not need to read
+  PDF.
 - Search the source for `urllib`, `http`, `socket` and `requests` to
   confirm.
 
@@ -196,6 +205,14 @@ These points sit outside the claims above. Read them before you sign off.
   and who can open `C:\DealerRevenueRescue\store`.
 - **PINs have no minimum length and no lockout.** The app refuses only a
   blank PIN. Set your own rule for staff PINs.
+- **Don't lose or forget your PIN.** An admin resets a forgotten staff
+  PIN. If every admin forgets, IT closes the app, takes a backup and
+  renames `store\data\users.json`. The app then asks for a new admin,
+  and every account is made again. Setup, deals and forms stay.
+  Re-installing or downloading the app again does not reset a PIN: the
+  installer keeps the store's data, accounts included. Deleting the
+  whole install folder clears the PINs, and it also deletes every deal,
+  the setup and the forms.
 - **Backups are not encrypted.** A backup zip holds the store's deals
   and customer details. Whoever holds the USB stick holds that data.
   Store the stick the way you store paper deal jackets.
@@ -232,6 +249,12 @@ These points sit outside the claims above. Read them before you sign off.
 
 Pull requests are welcome. Never commit a real deal, stock number, store
 or customer. Every fixture here is made up.
+
+## Support
+
+There is no support line. Report bugs as issues on this project's
+GitHub page. Setup help is a paid service from Now is Late, Inc.
+([nowislate.com](https://nowislate.com)).
 
 ## Licence and disclaimer
 

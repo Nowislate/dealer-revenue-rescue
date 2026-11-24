@@ -54,9 +54,17 @@ from .state_rules import (
     CHARGE_TAG_FEE,
     FLORIDA,
     TAX_NONE,
+    VALUE_GREATER,
+    VALUE_STATE,
     StateRules,
     trade_credit,
 )
+
+
+class TaxInputError(ValueError):
+    """The deal lacks a figure the store's rule sheet needs (decision
+    30): the vehicle's state value, or a class the sheet does not list.
+    Nothing is guessed; the worksheet stops with a plain message."""
 
 CENTS = Decimal("0.01")
 SURTAX_CAP = Decimal("5000")
@@ -143,9 +151,25 @@ def _sheet_lines(rules: StateRules, inputs: DealInputs, **v) -> tuple:
     if rules.rebate_before_tax:
         lines.append(("Manufacturer rebate (before tax)",
                       cents(-inputs.manufacturer_rebate)))
+    if v["value_adjust"]:
+        word = ("State value replaces the price" if rules.value_rule == VALUE_STATE
+                else "State value is above the price")
+        lines.append((f"{word} (state value ${v['state_value']:,.2f})",
+                      v["value_adjust"]))
+    rate_note = ""
+    if inputs.vehicle.tax_class:
+        rate_note = f", {inputs.vehicle.tax_class}"
+    elif rules.brackets and v["state_rate"] != v["base_rate"]:
+        rate_note = ", price bracket"
     lines += [
         ("Taxable base", v["taxable_base"]),
-        (f"State tax ({_pct(v['state_rate'])})", v["state_tax"]),
+        (f"State tax ({_pct(v['state_rate'])}{rate_note})", v["state_tax"]),
+    ]
+    for band, amount in zip(rules.bands, v["band_taxes"]):
+        top = "and up" if band.high is None else f"to ${band.high:,.2f}"
+        lines.append((f"Extra state tax ({_pct(band.rate)} on ${band.low:,.2f} {top})",
+                      amount))
+    lines += [
         ("Local tax base" + (
             f" (first ${rules.local_cap:,.0f})" if rules.local_cap is not None else ""),
          v["surtax_base"]),
@@ -153,6 +177,8 @@ def _sheet_lines(rules: StateRules, inputs: DealInputs, **v) -> tuple:
     ]
     if rules.max_tax is not None:
         lines.append((f"Tax limit (most ${rules.max_tax:,.2f})", cents(-v["tax_limit_cut"])))
+    if rules.min_tax is not None:
+        lines.append((f"Least tax (${rules.min_tax:,.2f})", v["min_tax_add"]))
     lines += [
         ("Total sales tax", v["total_tax"]),
         (f"Government fees ({_taxed_word(rules, CHARGE_GOVERNMENT_FEES)})",
@@ -194,8 +220,20 @@ def calculate_retail_deal(
     # how the trade counts, and any limits. Florida is the built-in
     # sheet; with it every step below is the spec Section 9 order.
     rules = preset.rules if preset is not None else FLORIDA
+    vehicle = inputs.vehicle
+    base_rate = state_rate
     if rules.tax_kind == TAX_NONE:
         state_rate = ZERO
+    else:
+        # Questions 14 and 15: a vehicle class or a price bracket can set
+        # the state rate. The bracket reads the selling price after the
+        # dealer's own discount.
+        try:
+            state_rate = rules.state_rate_for(
+                state_rate, price=inputs.selling_price - inputs.dealer_discount,
+                is_new=vehicle.is_new, tax_class=vehicle.tax_class)
+        except ValueError as exc:
+            raise TaxInputError(str(exc)) from None
     florida = rules.built_in and rules.state == "FL"
     taxed = rules.is_taxed
 
@@ -238,6 +276,21 @@ def calculate_retail_deal(
     if taxed(CHARGE_GOVERNMENT_FEES):
         taxed_after_gross += inputs.government_fees
     taxable_base = after_discount - untaxed_in_gross + taxed_after_gross - credit
+    # Question 17: the state's value for the vehicle in place of the
+    # price (after the dealer discount), or the greater of the two.
+    value_adjust = ZERO
+    state_value = vehicle.state_value
+    if rules.needs_state_value(vehicle.is_new):
+        if state_value is None or state_value <= ZERO:
+            raise TaxInputError(
+                "Enter the vehicle's state value. Your state taxes this "
+                "vehicle on the value the state sets; look it up in the "
+                "state's own tool.")
+        sold_for = price - inputs.dealer_discount
+        taxed_value = state_value if rules.value_rule == VALUE_STATE else max(
+            sold_for, state_value) if rules.value_rule == VALUE_GREATER else sold_for
+        value_adjust = cents(taxed_value - sold_for)
+        taxable_base += value_adjust
     if rules.rebate_before_tax:
         taxable_base -= inputs.manufacturer_rebate
     if taxable_base < ZERO:
@@ -245,6 +298,9 @@ def calculate_retail_deal(
     taxable_base = cents(taxable_base)
     # Step 8: state tax = state rate x the taxable base (rate from preset data).
     state_tax = cents(taxable_base * state_rate)
+    # Question 13: extra state tax on slices of the taxable base.
+    band_taxes = [ZERO if rules.tax_kind == TAX_NONE else cents(band.tax_on(taxable_base))
+                  for band in rules.bands]
     # Step 9: local tax at the buyer's (or the dealership's) place's
     # rate; Florida applies it only to the first $5,000 of the base.
     local_rate = ZERO if rules.tax_kind == TAX_NONE else inputs.county_surtax_rate
@@ -254,11 +310,17 @@ def calculate_retail_deal(
     )
     county_surtax = cents(surtax_base * local_rate)
     # Step 10: total sales tax, held to the sheet's most-tax limit.
-    total_tax = state_tax + county_surtax
+    total_tax = state_tax + sum(band_taxes, ZERO) + county_surtax
     tax_limit_cut = ZERO
     if rules.max_tax is not None and total_tax > rules.max_tax:
         tax_limit_cut = cents(total_tax - rules.max_tax)
         total_tax = cents(rules.max_tax)
+    # Question 16: the least tax a taxed deal owes.
+    min_tax_add = ZERO
+    if (rules.min_tax is not None and rules.tax_kind != TAX_NONE
+            and total_tax < rules.min_tax):
+        min_tax_add = cents(rules.min_tax - total_tax)
+        total_tax = cents(rules.min_tax)
     # Step 11: government fees are added after tax, when separately
     # itemised and state-mandated (amounts confirmed per deal).
     government_fees = cents(inputs.government_fees)
@@ -319,7 +381,9 @@ def calculate_retail_deal(
             state_tax=state_tax, surtax_base=surtax_base,
             county_surtax=county_surtax, tax_limit_cut=tax_limit_cut,
             total_tax=total_tax, government_fees=government_fees,
-            amount_due=amount_due,
+            amount_due=amount_due, base_rate=base_rate, band_taxes=band_taxes,
+            value_adjust=value_adjust, state_value=state_value,
+            min_tax_add=min_tax_add,
         )
 
     # --- Payment estimate (only when term and rate were supplied) -------

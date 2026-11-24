@@ -8,6 +8,25 @@ certifies the numbers, and the store prints the deal on its own forms and
 blank letter paper. No AI. No internet connection. A fresh install holds
 no dealer name, fee or rate.
 
+## What changed in 1.1.0
+
+- **Any printer Windows can print to.** The app now draws each page
+  through the printer's own Windows driver, the way any Windows program
+  prints. Before, it sent a PDF file straight to the printer, so only
+  printers that read PDF themselves could print. Pre-printed form stock
+  and impact printers remain a custom setup: contact Now is Late.
+- **More state tax shapes.** Setup has five new optional questions for
+  retail deals: an extra tax on a dollar range of the price, a state rate
+  set by the selling price, vehicle classes with their own rate, a least
+  tax per deal, and tax on the state's own value for the vehicle (typed
+  on the deal from the state's lookup). Blank answers change nothing; an
+  existing setup keeps its approval and its math check.
+- **"Don't lose or forget your PIN."** The first-admin screen and the
+  guides say it plainly. Re-installing does not reset a PIN; if every
+  admin forgets, IT resets the accounts file (see the admin guide).
+- **Support.** There is no support line. Report bugs as GitHub issues.
+  Setup help is a paid service from Now is Late, Inc.
+
 ## What changed in 1.0.3
 
 - Restoring the backup the installer makes before each install now
@@ -61,12 +80,11 @@ runs the release's test suite on that PC, and installs to
 
 ## Before you rely on it
 
-- **The printer must accept PDF directly** (PDF direct print). See the
-  README.
+- **Any printer Windows can print to,** on plain 8.5 x 11 paper.
 - **Run the practice drill on paper** before an outage. It is the store's
   own print test: every page prints SAMPLE.
 - **Florida's tax rules are built in.** A store in another state answers
-  twelve questions in setup, and setup proves the answers against two of
+  the rule sheet in setup, and setup proves the answers against two of
   its own DMS deals before the app runs.
 - Have your controller or accountant check the figures against your DMS.
   The software is provided "as is" under the Apache License 2.0.

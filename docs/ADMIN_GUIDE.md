@@ -2,7 +2,7 @@
 
 Print your deal paperwork when the DMS, CRM or internet is down.
 
-Current as of November 24, 2026 (version 1.0.3). This one guide replaces
+Current as of November 24, 2026 (version 1.1.0). This one guide replaces
 the earlier versioned guides (`ADMIN_GUIDE-native-safety-v1*.md` and
 `ADMIN_GUIDE-native-form-images-v1*.md`); git history keeps them.
 
@@ -72,8 +72,20 @@ answers the rule sheet: what tax the state charges on a vehicle sale,
 whose address picks the local rate, any limit on the local tax or on the
 whole tax, the trade-in credit (full, none, or up to a dollar limit),
 whether the rebate comes off before tax, which charges are taxed, and
-how a lease is taxed. "None of these fit" on the first or the lease
-question stops setup: the app cannot run that state yet. The sheet is
+how a lease is taxed. Questions 13 to 17 (decision 30) are optional and
+apply to retail deals: an extra state tax on a dollar range of the
+taxable amount (`rate %, from $, to $` per line); a state rate set by
+the selling price after the dealer discount (`from $, rate %` per line,
+starting at 0, for all or used vehicles); vehicle classes with their own
+state rate (`class name, rate %` per line, offered on the deal screen);
+a least tax per deal; and whether the state taxes the price, its own
+value for the vehicle, or the greater of the two (for all or used
+vehicles). With a state value, the deal screen asks for it, and the
+worksheet stops until it is typed; the app makes no connection to look
+it up. When the sheet uses a class, a price bracket or a state value,
+the math check asks for the check deal's new or used, class and state
+value too. "None of these fit" on the first or the lease question stops
+setup: the app cannot run that state yet. The sheet is
 saved in the preset (`state_rules`), and the worksheet names each line
 by how the sheet treats it ("Local tax", "Trade-in credit against tax").
 
@@ -140,6 +152,13 @@ Finishing Step 0 with exactly one admin requires that admin's named
 acknowledgment of the recovery risk. A manager cannot acknowledge for an
 admin.
 
+**Don't lose or forget your PIN.** Keep two admins. An admin resets a
+forgotten staff PIN. Re-installing or downloading the app again does not
+reset a PIN: the installer never touches the store's data, accounts
+included. Deleting the whole install folder clears the PINs, and it also
+deletes every deal, the setup, the forms and the audit log. Use the
+recovery below instead.
+
 If every admin is locked out: dealer IT closes the app, takes a backup,
 and renames `data\users.json` (preferred) or deletes it. Relaunch,
 bootstrap a new admin, accept the notice, and recreate accounts under
@@ -151,6 +170,13 @@ control. A malformed account file fails closed and calls for IT recovery.
 
 Forms print as full-page images on blank letter paper with deal values on
 top (decision 16). There is no PDF merge and no pre-printed stock.
+Printing on pre-printed form stock is a custom setup: contact Now is Late (nowislate.com).
+
+Each page is drawn through the printer's own Windows driver, the way any
+Windows program prints. Any printer Windows can print to works; the
+printer does not need to read PDF. The driver's default paper and tray
+are used, so set letter paper and the tray in the printer's Windows
+settings.
 
 ### The demo form
 
@@ -339,8 +365,7 @@ closed.
 
 No real form or customer records are in this repository (decision 17).
 Still open: mapping and approving the dealer's real forms; on-site Windows
-UI, printer, tray, copy and physical output checks; the RAW spooler path
-needs a printer that understands the PDF it receives; one-pay lease;
+UI, printer, tray, copy and physical output checks; one-pay lease;
 decision 10's unverified Florida items (surtax base under $5,000, plate
 transfer fee; the store enters current-year DR-15DSS rates at Step 0.7
 and proves them at Step 0.8); any other state's rules, which the store

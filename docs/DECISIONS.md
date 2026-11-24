@@ -284,3 +284,41 @@ other way round.
     `store\backups` restores as the administrator guide says. It also
     carries four README corrections. The public repository takes 1.0.3
     as a new commit on its history; no private history is published.
+28. **Printing through the printer's Windows driver; no support line
+    (Lane, 2026-11-24).** Lane: any laser printer on plain 8.5 x 11
+    paper must work, so the app draws each page through the printer's
+    own Windows driver (GDI and GDI+) instead of sending a raw PDF job;
+    the printer no longer has to read PDF (replaces decision 24's
+    "PDF direct print" need). Printing on pre-printed form stock or on
+    an impact printer is a custom setup: contact Now is Late. The free
+    download has no support line: bugs go to GitHub issues, and setup
+    help is a paid service. Lenders and states accept letter-paper
+    printing; wet signatures are outside the app.
+29. **A forgotten PIN (Lane, 2026-11-24).** The app and its guides say
+    plainly: "Don't lose or forget your PIN." An admin resets a staff
+    PIN. If every admin forgets, IT renames `store\data\users.json` and
+    the accounts are made again; setup, deals and forms stay. A
+    re-install does not reset a PIN, because the installer keeps the
+    store's data; deleting the install folder clears PINs and deletes
+    every deal and the setup. Lane chose this over "delete the app and
+    download it again" once shown that a re-download keeps the PIN.
+30. **State tax shapes beyond the twelve questions (Lane, 2026-11-24).**
+    Lane: "All automotive tax rates are published. If it doesn't fit,
+    let's fix it." The rule sheet gains five optional questions for
+    retail deals: 13, an extra state tax on a dollar range of the
+    taxable amount (Tennessee's single article tax); 14, a state rate
+    set by the selling price after the dealer discount, for all or used
+    vehicles (Arkansas); 15, vehicle classes with their own state rate,
+    picked on the deal (Mississippi); 16, a least tax per deal
+    (Virginia); 17, tax on the state's value for the vehicle, or the
+    greater of price and that value, typed on the deal from the state's
+    own tool (Georgia). Blank answers change nothing, and a sheet saved
+    before this decision saves and fingerprints as it did. The two-deal
+    math check still proves every typed sheet. Leases keep the lease
+    questions.
+31. **Release 1.1.0 (Lane, 2026-11-24).** Lane picked "Publish v1.1.0
+    now" on the card in the project thread, 19:40 UTC. Release 1.1.0
+    publishes decisions 28-30: printing through the printer's Windows
+    driver, the five tax shapes, the PIN warning and the support line.
+    The public repository takes 1.1.0 as a new commit on its history; no
+    private history is published.

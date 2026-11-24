@@ -21,8 +21,9 @@ Markings, per the spec:
   (the Stage 5 PDF renderer will apply the same offsets to the form
   placement itself).
 
-Plain text lines ending in CRLF, so the Windows RAW spooler path
-prints them as-is on the store's printers.
+Plain text lines ending in CRLF. The Windows provider lays them out
+on letter pages (page_drawing.pages_from_text) and draws them through
+the printer's driver.
 """
 
 from __future__ import annotations

@@ -25,7 +25,19 @@ jobs:
         with:
           node-version: '24'
       - name: Native standard-library suite
+        env:
+          # Windows only: also print through a real Windows driver
+          # (Microsoft Print to PDF) - tests/test_printers_windows.py.
+          DP_PRINT_CHECK: '1'
         run: python -m unittest discover -s tests
+      - name: Keep the driver-printed pages
+        if: always() && runner.os == 'Windows'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: driver-print-proof
+          path: ${{ runner.temp }}/driver-print-proof
+          if-no-files-found: warn
+          retention-days: 14
       - name: Browser core, intake, storage, assets and routing
         if: hashFiles('review-prototypes/entry-recap-v1.6/run-checks.py') != ''
         run: python review-prototypes/entry-recap-v1.6/run-checks.py

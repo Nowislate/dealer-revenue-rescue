@@ -56,6 +56,8 @@ from .deal_flow import (
     SetupRequiredError,
     preset_from_setup_file,
 )
+from . import state_rules as sr
+from .math_check import parse_money
 from .models import D, Buyer, TradeIn, Vehicle, parse_odometer
 from .doc_library import deal_condition
 from .products_ui import collect_products, draw_products, offered_products
@@ -390,6 +392,25 @@ if TK_AVAILABLE:
                 self.body, text="New vehicle", variable=self.new_vehicle_var
             ).pack(anchor="w", pady=6)
             self.new_vehicle_var.set(bool(v.is_new))
+            # Decision 30: only when the store's rule sheet uses them.
+            preset = self.session.preset
+            rules = preset.rules if preset is not None else sr.FLORIDA
+            if rules.classes:
+                row = tk.Frame(self.body)
+                row.pack(fill="x", pady=2)
+                tk.Label(row, text="Vehicle class for tax", width=28, anchor="w").pack(side="left")
+                names = [""] + [c.name for c in rules.classes]
+                ttk.Combobox(row, textvariable=self.var("veh_tax_class", v.tax_class),
+                             values=names, state="readonly", width=34).pack(side="left")
+                tk.Label(self.body, anchor="w", fg="#444444",
+                         text="Blank is the standard state rate.").pack(fill="x")
+            if rules.value_rule != sr.VALUE_PRICE:
+                self._field("State value $", "veh_state_value",
+                            "" if v.state_value is None else str(v.state_value))
+                tk.Label(self.body, anchor="w", fg="#444444", justify="left", wraplength=600,
+                         text=("Your state taxes this vehicle on the value it sets"
+                               + (" (used vehicles)" if rules.value_used_only else "")
+                               + ". Type it from the state's own lookup.")).pack(fill="x")
 
         def _collect_vehicle(self) -> None:
             year_text = self.vars["veh_year"].get().strip()
@@ -408,6 +429,9 @@ if TK_AVAILABLE:
                     body_style=self._text("veh_body"),
                     color=self._text("veh_color"),
                     odometer=parse_odometer(self._text("veh_odometer")),
+                    tax_class=self._text("veh_tax_class"),
+                    state_value=(parse_money(self._text("veh_state_value"), label="State value")
+                                 if self._text("veh_state_value") else None),
                 )
             )
 

@@ -112,6 +112,12 @@ class Vehicle:
     body_style: str = ""
     color: str = ""
     odometer: Optional[int] = None
+    # Decision 30: only for a rule sheet that uses them. The vehicle
+    # class picks its own state rate (question 15); blank is the
+    # standard rate. The state value is what the state says the vehicle
+    # is worth (question 17), typed from the state's own lookup.
+    tax_class: str = ""
+    state_value: Optional[Decimal] = None
 
 
 @dataclass
@@ -403,6 +409,10 @@ def vehicle_to_dict(vehicle: Vehicle) -> dict:
             data[name] = getattr(vehicle, name)
     if vehicle.odometer is not None:
         data["odometer"] = vehicle.odometer
+    if vehicle.tax_class:
+        data["tax_class"] = vehicle.tax_class
+    if vehicle.state_value is not None:
+        data["state_value"] = str(vehicle.state_value)
     return data
 
 
@@ -416,6 +426,8 @@ def vehicle_from_dict(data: dict) -> Vehicle:
         is_new=bool(data.get("is_new", True)),
         stock_number=data.get("stock_number", ""),
         odometer=None if odometer is None else int(odometer),
+        tax_class=str(data.get("tax_class") or ""),
+        state_value=None if data.get("state_value") in (None, "") else D(data["state_value"]),
         **{name: str(data.get(name) or "") for name in _VEHICLE_EXTRA},
     )
 

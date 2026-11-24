@@ -16,7 +16,7 @@ except ImportError:
 
 from .startup import StartupFlow
 from .disclaimer import TEXT, VERSION
-from .users import ROLES, ACTION_MANAGE_USERS, ACTION_APPROVE_PRESET
+from .users import ROLES, ACTION_MANAGE_USERS, ACTION_APPROVE_PRESET, PIN_WARNING
 from .doc_library import CONDITION_LEASE, CONDITION_RETAIL_NEW, CONDITION_RETAIL_USED
 
 
@@ -75,6 +75,7 @@ if TK_AVAILABLE:
                       font=('Segoe UI', 16, 'bold')).pack(anchor='w')
             if bootstrap:
                 ttk.Label(self.body, text='Identity only. Read and accept the notice before setup or deal work.', wraplength=760).pack(anchor='w', pady=10)
+                ttk.Label(self.body, text=PIN_WARNING, wraplength=760).pack(anchor='w', pady=(0, 10))
             username = self.field(self.body, 'Username')
             name = self.field(self.body, 'Display name') if bootstrap else None
             secret = self.field(self.body, 'PIN / password', secret=True)

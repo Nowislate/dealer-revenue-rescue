@@ -14,8 +14,8 @@ and alignment calibration (print_config.py), the built-in text
 renderer (text_renderer.py), and the resumable, audited print session
 (print_pipeline.py, Tkinter driver in print_ui.py) that prints a
 certified deal's pack -- or a DRAFT-watermarked one -- through the
-printer provider (printers.py, now with a Windows RAW spooler
-print_document). Stage 5 makes every document letter size (the
+printer provider (printers.py, which draws each page through the
+printer's Windows driver). Stage 5 makes every document letter size (the
 long-stock gate is retired), and adds the dealer document library
 (doc_library.py + pdf_overlay.py values overlays + docs_ui.py),
 drill mode (drill.py: SAMPLE practice deals on the acceptance
@@ -71,4 +71,4 @@ __all__ = [
     "validate_preset",
 ]
 
-__version__ = "1.0.3"
+__version__ = "1.1.0"

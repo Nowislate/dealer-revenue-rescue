@@ -7,9 +7,9 @@ math check), the home screen, the demo title form, and a practice
 drill up to the print window.
 
 Printing: the printer LIST is the machine's real Windows printers, but
-nothing is sent to a printer. A cloud machine has no paper, and sending
-a RAW PDF to "Microsoft Print to PDF" can hang. Physical printing is
-the separate paper test (docs/PRINT-TEST.md).
+nothing is sent to a printer here. A cloud machine has no paper. The
+driver path itself is proved by tests/test_printers_windows.py; physical
+printing is the separate paper test (docs/PRINT-TEST.md).
 
 Every value typed is SAMPLE data (decision 17).
 
@@ -177,6 +177,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--out", required=True)
     parser.add_argument("--typed-rules", action="store_true")
+    # Decision 30: a typed sheet that also uses questions 13, 15 and 16
+    # (an extra tax on $1,600-$3,200, a vehicle class, a $75 least tax).
+    parser.add_argument("--shaped-rules", action="store_true")
     parser.add_argument("--forms", default=None)
     parser.add_argument("--app-src", default=None)
     args = parser.parse_args()
@@ -184,7 +187,8 @@ def main() -> int:
     log.append(f"program: {Path(dealerpaperwork.__file__).resolve().parent} "
                f"version {dealerpaperwork.__version__}")
     forms = Path(args.forms).resolve() if args.forms else None
-    typed = args.typed_rules
+    shaped = args.shaped_rules
+    typed = args.typed_rules or shaped
     out = Path(args.out).resolve()
     out.mkdir(parents=True, exist_ok=True)
     data = Path(tempfile.mkdtemp(prefix="rr-walk-"))
@@ -282,6 +286,10 @@ def main() -> int:
             s.vars["rules_lease_tax"].set(sheet.lease_tax)
             for charge, var in s.taxed_vars.items():
                 var.set(charge in sheet.taxed)
+            if shaped:
+                s.shape_texts["bands"].insert("1.0", "2.75, 1600, 3200")
+                s.shape_texts["classes"].insert("1.0", "Truck over 10,000 lb GVW, 3")
+                s.vars["rules_min_tax"].set("75")
         else:
             s.vars["rules_mode"].set("florida")
         w.shot("setup-0.6-state-rules")
@@ -318,6 +326,13 @@ def main() -> int:
             for kind, entry in deals:
                 app = {l.label: l.app for l in s.wizard.set_retail_check(entry, kind).lines}
                 entry.dms_monthly_payment = app["Monthly payment"]
+                if shaped:
+                    # No DMS here to read: the sheet's extra tax changes
+                    # the hand figures, so the walk types the app's own.
+                    entry.dms_total_tax = app["Total sales tax"]
+                    entry.dms_amount_financed = app["Amount financed"]
+                    app = {l.label: l.app for l in s.wizard.set_retail_check(entry, kind).lines}
+                    entry.dms_monthly_payment = app["Monthly payment"]
         else:
             deals = (("retail", retail_entry()),)
         for kind, entry in deals:
