@@ -8,6 +8,26 @@ certifies the numbers, and the store prints the deal on its own forms and
 blank letter paper. No AI. No internet connection. A fresh install holds
 no dealer name, fee or rate.
 
+## What changed in 1.2.0
+
+- **The buyer's ZIP fills the county.** On a Florida store's retail or
+  lease deal, a ZIP inside one county fills the county box. A ZIP that
+  crosses a county line lists only those counties, and the clerk picks
+  the one where the buyer registers the vehicle; the app never picks. A
+  county the ZIP does not touch gets a warning line.
+- **Florida county rates are built in.** At setup, a manager clicks a
+  year to fill all 67 county surtax rates from the Florida DR-15DSS
+  table, checks them and approves them by name. The 2026 table comes from
+  the 2026 form. The 2027 table comes from that form plus the Florida
+  Department of Revenue's notices of 20 November 2026 (Broward, Gadsden,
+  Gilchrist and Gulf change on 1 January 2027); it will be checked
+  against the 2027 form when the Department posts it.
+- **Rates follow the calendar.** County rates change on 1 January. A
+  deal dated in a year other than the loaded table's year cannot be
+  certified until a manager loads that year's table. Rates typed by hand
+  work as before. Your setup math check stays passed unless your check
+  deal's county rate changed.
+
 ## What changed in 1.1.0
 
 - **Any printer Windows can print to.** The app now draws each page

@@ -39,6 +39,7 @@ except Exception:  # pragma: no cover - exercised only without Tk
     ttk = None  # type: ignore[assignment]
     TK_AVAILABLE = False
 
+from . import county_field
 from .deal_flow import DEFAULT_DEALS_DIR
 from .lease_flow import LeaseDealSession, LeaseStep
 from .models import Buyer, LeaseInputs, Vehicle, parse_odometer
@@ -409,7 +410,12 @@ if TK_AVAILABLE:
             self._field("City", "buyer_city", b.city)
             self._field("State", "buyer_state", b.state)
             self._field("ZIP code", "buyer_zip", b.zip_code)
-            self._field("Residence county *", "buyer_county", b.residence_county)
+            county_field.build(
+                tk, ttk, self.body, label="Residence county *", label_width=40,
+                zip_var=self.vars["buyer_zip"],
+                county_var=self.var("buyer_county", b.residence_county),
+                enabled=county_field.uses_florida_lookup(self.session.preset),
+            )
             self._field("Lessee phone", "buyer_phone", b.phone)
             self._field("Co-lessee street address", "co_street", b.co_buyer_street_address)
             self._field("Co-lessee city", "co_city", b.co_buyer_city)

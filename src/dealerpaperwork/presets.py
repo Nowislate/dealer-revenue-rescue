@@ -66,6 +66,10 @@ class Preset:
     # County discretionary surtax rates by buyer residence county, loaded
     # from the current-year Form DR-15DSS (spec Section 9, step 9).
     county_surtax_rates: dict[str, Decimal] = field(default_factory=dict)
+    # Decision 32: the calendar year of the built-in table the rates were
+    # loaded from, or None for a table the store typed by hand. A deal in
+    # another year cannot be certified on a dated table.
+    county_rates_year: Optional[int] = None
     # Decision 22: how the store's state taxes a deal. Florida is the
     # built-in sheet and the default (every preset before Decision 22
     # was a Florida preset).
@@ -150,6 +154,13 @@ def _lease_from_dict(data) -> Optional[LeasePreset]:
     return lease
 
 
+def rates_year_from(raw: dict) -> Optional[int]:
+    """Decision 32's rate year from a saved preset; absent means None, so
+    a preset saved before decision 32 reads exactly as it did."""
+    value = raw.get("county_rates_year")
+    return None if value in (None, "") else int(value)
+
+
 def load_preset(path: Union[str, Path]) -> Preset:
     """Load a preset JSON file. Does not approve it; approval is recorded
     in the file itself by the dealer's approver."""
@@ -164,6 +175,7 @@ def load_preset(path: Union[str, Path]) -> Preset:
         lease=_lease_from_dict(raw.get("lease")),
         state_tax_rate=D(raw.get("state_tax_rate", "0.06")),
         county_surtax_rates=rates,
+        county_rates_year=rates_year_from(raw),
         rules=rules_from_dict(raw.get("state_rules")),
         version=str(raw.get("version", "1")),
         approved_by=raw.get("approved_by"),

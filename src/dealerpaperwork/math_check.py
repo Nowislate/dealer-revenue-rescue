@@ -609,7 +609,7 @@ def entry_to_text(entry, specs) -> dict:
 
 
 def parse_county_table(text: str) -> dict[str, Decimal]:
-    """One county per line, "County, rate in percent": "Pinellas, 1.5".
+    """One county per line, "County, rate in percent": "Pinellas, 1".
 
     Rates are typed as percents, as the DR-15DSS prints them, and
     stored as fractions. Blank lines are skipped. Every bad line is
@@ -621,7 +621,7 @@ def parse_county_table(text: str) -> dict[str, Decimal]:
         if not line.strip():
             continue
         if "," not in line:
-            errors.append(f"Line {number}: write it as County, rate (e.g. Pinellas, 1.5).")
+            errors.append(f"Line {number}: write it as County, rate (e.g. Pinellas, 1).")
             continue
         county, _, rate_text = line.rpartition(",")
         county = county.strip()
