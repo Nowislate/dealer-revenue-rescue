@@ -14,6 +14,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from unittest import mock
+
+from dealerpaperwork import network_check
 from dealerpaperwork.network_check import (
     NetworkCheckResult,
     check_lan,
@@ -65,6 +68,34 @@ class TestCheckLan(unittest.TestCase):
         result = check_lan()
         self.assertIsInstance(result, NetworkCheckResult)
         self.assertTrue(result.message)
+
+
+
+
+class TestLocalAddressLookup(unittest.TestCase):
+    """The only OS call: a lookup of this host's own name. No socket is
+    created and no connection is opened."""
+
+    def test_looks_up_only_the_own_hostname_and_opens_no_socket(self):
+        infos = [
+            (2, 1, 6, "", ("192.168.1.20", 0)),
+            (2, 2, 17, "", ("192.168.1.20", 0)),
+            (2, 1, 6, "", ("10.0.0.5", 0)),
+        ]
+        with mock.patch.object(network_check.socket, "gethostname", return_value="FRONT-PC"), \
+                mock.patch.object(network_check.socket, "getaddrinfo", return_value=infos) as lookup, \
+                mock.patch.object(network_check.socket, "socket") as make_socket, \
+                mock.patch.object(network_check.socket, "create_connection") as connect:
+            addresses = network_check.local_ipv4_addresses()
+        self.assertEqual(addresses, ["10.0.0.5", "192.168.1.20"])
+        lookup.assert_called_once_with("FRONT-PC", None, network_check.socket.AF_INET)
+        make_socket.assert_not_called()
+        connect.assert_not_called()
+
+    def test_failed_lookup_means_no_addresses(self):
+        with mock.patch.object(network_check.socket, "getaddrinfo",
+                               side_effect=network_check.socket.gaierror):
+            self.assertEqual(network_check.local_ipv4_addresses(), [])
 
 
 if __name__ == "__main__":

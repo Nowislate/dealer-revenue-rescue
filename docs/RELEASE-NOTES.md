@@ -8,6 +8,16 @@ certifies the numbers, and the store prints the deal on its own forms and
 blank letter paper. No AI. No internet connection. A fresh install holds
 no dealer name, fee or rate.
 
+## What changed in 1.0.1
+
+- The setup network check's description now says exactly what it does:
+  one lookup of this PC's own name, only when you press "Run network
+  check". It opens no connection. The code did not change.
+- The install guides give the PowerShell command that checks the zip's
+  SHA-256. That check is the only proof the zip came from this project.
+- A `NOTICE` file names the copyright holder, Now is Late, Inc.
+- The installer records in `app\install.json` whether its tests ran.
+
 ## Download
 
 `DealerRevenueRescue-@VERSION@.zip`, below.

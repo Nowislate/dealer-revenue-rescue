@@ -2,7 +2,7 @@
 
 Print your deal paperwork when the DMS, CRM or internet is down.
 
-Current as of November 19, 2026 (version 1.0.0). This one guide replaces
+Current as of November 24, 2026 (version 1.0.1). This one guide replaces
 the earlier versioned guides (`ADMIN_GUIDE-native-safety-v1*.md` and
 `ADMIN_GUIDE-native-form-images-v1*.md`); git history keeps them.
 
@@ -29,7 +29,14 @@ backs up existing store data, then installs:
 - `Start Dealer Revenue Rescue.cmd`, `Back up now.cmd` and a desktop shortcut.
 
 Options: `INSTALL.cmd --target D:\SomeFolder` installs elsewhere;
-`--skip-tests` skips the test run; `--no-shortcut` skips the desktop icon.
+`--skip-tests` skips the test run (for a reinstall of a release already
+tested on that PC; `app\install.json` records `"tests_run_before_install":
+false`); `--no-shortcut` skips the desktop icon.
+
+The installer's file check compares each file with `release-manifest.json`,
+which ships inside the zip. It catches a damaged copy. It cannot show where
+the zip came from. Check the zip's SHA-256 against the release page before
+you unzip it: `Get-FileHash .\DealerRevenueRescue-<version>.zip -Algorithm SHA256`.
 
 The launcher (`app\launch.pyw`) always uses the `store` folder as the
 app's working folder. If the app fails to start, the reason is written to

@@ -13,8 +13,13 @@ What it does, in order:
    need it).
 2. Checks every file in the release against ``release-manifest.json``
    (SHA-256), so a damaged USB copy is refused before anything changes.
+   The manifest ships inside the zip, so this proves the copy is intact,
+   not where it came from: the SHA-256 of the zip, published with the
+   release, is the only origin check, and the IT team checks it before
+   unzipping (README, SETUP-ONE-PC.md Part 3).
 3. Runs the full test suite from the release folder (skip with
-   ``--skip-tests``).
+   ``--skip-tests``, an IT option for a reinstall of a release already
+   tested on this PC; ``install.json`` records that it was skipped).
 4. Backs up the store's existing data, if any, into ``store\\backups``.
 5. Copies the program into ``<target>\\app``. The previous program, if
    any, moves to ``<target>\\app-previous``. The store's data in
@@ -220,7 +225,8 @@ def pythonw_path(executable: Optional[str] = None) -> Path:
     return candidate if candidate.is_file() else exe
 
 
-def install_app(source: Path, target: Path, manifest: dict, python_exe: Path) -> Path:
+def install_app(source: Path, target: Path, manifest: dict, python_exe: Path,
+                tests_run: bool = True) -> Path:
     """Copy the program into target/app, keeping the old one as app-previous."""
     source, target = Path(source), Path(target)
     target.mkdir(parents=True, exist_ok=True)
@@ -235,6 +241,7 @@ def install_app(source: Path, target: Path, manifest: dict, python_exe: Path) ->
         "installed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "python": str(python_exe),
         "release_manifest_sha256": _sha256(source / MANIFEST_NAME),
+        "tests_run_before_install": bool(tests_run),
     }
     (staging / "install.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
     app, previous = target / APP_DIR, target / PREVIOUS_DIR
@@ -352,9 +359,11 @@ def main(argv: Optional[list[str]] = None, *, out=print) -> int:
                                "original file. Problems: " + "; ".join(problems[:10]))
         version = manifest.get("version", "unknown")
         out("  OK: %d files match (version %s)" % (len(manifest["files"]), version))
+        out("  This shows the copy is undamaged. It does not show where the zip came")
+        out("  from: check the zip's SHA-256 against the one on the release page.")
 
         if args.skip_tests:
-            out("Step 3 of 6: test suite skipped (--skip-tests).")
+            out("Step 3 of 6: test suite skipped (--skip-tests). install.json records this.")
         else:
             out("Step 3 of 6: running the test suite. Windows may flash open and close; "
                 "this takes about a minute...")
@@ -373,7 +382,7 @@ def main(argv: Optional[list[str]] = None, *, out=print) -> int:
 
         out("Step 5 of 6: copying the program to %s..." % (target / APP_DIR))
         python_exe = pythonw_path()
-        install_app(source, target, manifest, python_exe)
+        install_app(source, target, manifest, python_exe, tests_run=not args.skip_tests)
         store.mkdir(parents=True, exist_ok=True)
         out("  OK: program installed; store data folder is " + str(store))
 

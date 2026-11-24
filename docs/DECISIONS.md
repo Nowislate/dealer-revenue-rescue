@@ -262,3 +262,12 @@ other way round.
     names the printer need (PDF direct print), and the store's own
     practice drill is its paper test before an outage. This replaces
     the "home paper test still stands" line in decision 22.
+25. **Copyright holder and release 1.0.1 (Lane, 2026-11-24).** The
+    copyright holder is Now is Late, Inc., named in `NOTICE`; `LICENSE`
+    stays the verbatim Apache 2.0 text. Release 1.0.1 publishes the
+    review fixes: the network check's wording says exactly what it does
+    (one lookup of the PC's own name, no connection), the install guides
+    give the SHA-256 check as the only proof of where the zip came from,
+    and `install.json` records whether the installer's tests ran. The
+    public repository takes 1.0.1 as a new commit on its one-commit
+    history; no private history is published.

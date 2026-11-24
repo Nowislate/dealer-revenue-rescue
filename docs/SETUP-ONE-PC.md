@@ -1,4 +1,4 @@
-DEALERSHIP REVENUE RESCUE: SET UP ONE PC WITH A USB PRINTER
+DEALER REVENUE RESCUE: SET UP ONE PC WITH A USB PRINTER
 ============================================================
 
 Print your deal paperwork when the DMS, CRM or internet is down.
@@ -78,20 +78,31 @@ PART 3. INSTALL REVENUE RESCUE
 
 1. Copy DealerRevenueRescue-<version>.zip from the USB stick to the Desktop.
 
-2. Right-click the zip and choose "Extract All", then click Extract.
+2. Check the zip is the one this project published.
+   Right-click Start and open "Windows PowerShell" or "Terminal". Type:
+
+       Get-FileHash $HOME\Desktop\DealerRevenueRescue-<version>.zip -Algorithm SHA256
+
+   You should see a long line of letters and numbers under "Hash".
+   It must match the SHA-256 on the release page, every character.
+   If it does not match, stop. Delete the zip and download it again.
+   This is the only check that the zip came from this project. The
+   installer checks that no file is damaged, not where the zip came from.
+
+3. Right-click the zip and choose "Extract All", then click Extract.
    A folder named DealerRevenueRescue-<version> opens.
    It holds INSTALL.cmd, this guide (READ-ME-FIRST.txt) and a few folders.
 
-3. Double-click INSTALL.cmd.
+4. Double-click INSTALL.cmd.
    If Windows shows "Windows protected your PC", click "More info",
    then "Run anyway". The file is a plain text script; nothing is downloaded.
 
-4. A black window shows six steps. Each one ends with "OK".
-   During step 3, small windows may flash open and close. That is the
+5. A black window shows six steps. Each one ends with "OK".
+   During the installer's step 3, small windows may flash open and close. That is the
    app testing itself on this PC. It takes one to two minutes.
    You should see "DONE. Dealer Revenue Rescue <version> is installed."
 
-5. Press any key to close the black window.
+6. Press any key to close the black window.
    You should now see a "Dealer Revenue Rescue" icon on the Desktop.
 
 The app now lives in C:\DealerRevenueRescue:

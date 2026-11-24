@@ -13,14 +13,14 @@ form, aligned, on a real printer. The photos at the end are the evidence.
    The app sends each form to the printer as a PDF file; a printer
    without PDF support prints nothing or prints garbage.
 3. Twenty sheets of plain letter paper.
-4. A USB stick holding the release zip (`DealerRevenueRescue-1.0.0.zip`) and
+4. A USB stick holding the release zip (`DealerRevenueRescue-1.0.1.zip`) and
    the Python 3 Windows installer from python.org.
 5. A phone camera.
 
 ## Steps
 
 1. **Install.** Follow [SETUP-ONE-PC.md](SETUP-ONE-PC.md), Parts 1 to 3.
-   You should see "DONE. Dealer Revenue Rescue 1.0.0 is installed." Photograph
+   You should see "DONE. Dealer Revenue Rescue 1.0.1 is installed." Photograph
    that window.
 2. **Set up with the sample amounts.** Follow Part 4. At Step 0.2, use
    a dealer fee of 1,199 and an electronic tag fee of 199. At Step 0.6,
