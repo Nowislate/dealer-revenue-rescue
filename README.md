@@ -89,8 +89,10 @@ Read this list before you rely on it.
   - When a trade brings the taxable amount under $5,000, the worksheet
     shows a warning. Certification waits until a named user
     acknowledges it, and the acknowledgment is logged.
-- **No forms ship with the app.** The store supplies its own blank forms
-  and maps them during setup.
+- **No store forms ship with the app.** The store supplies its own blank
+  forms and maps them during setup. One demo form ships for practice: the
+  blank Florida title application (HSMV 82040), added with "Add the demo
+  title form".
 - **No connections.** No lender portals, credit bureaus, e-contracting,
   DMS or CRM. Nothing is sent anywhere.
 - **Windows only.** Windows 10 or 11, with Python from python.org.
@@ -118,7 +120,7 @@ release zip as `READ-ME-FIRST.txt`. In short:
    came from.
 3. Extract it and double-click `INSTALL.cmd`. The installer checks every
    file against its manifest and refuses any file the manifest does not
-   list. It then runs the full test suite on that PC and installs to
+   list. It then runs the release's test suite on that PC and installs to
    `C:\DealerRevenueRescue`. It copies only the program files the
    manifest lists.
 4. Open "Dealer Revenue Rescue" from the desktop. Create two admin accounts,
@@ -187,9 +189,13 @@ These points sit outside the claims above. Read them before you sign off.
   only origin check. The manifest inside the zip proves the copy is
   complete and unchanged, with no files added, not who made it.
 - **Data files are plain text.** Deals, setup and the audit log are JSON
-  files anyone with access to that PC's folder can read. Passwords are
+  files anyone with access to that PC's folder can read or change. The
+  audit log records what the app did; it cannot stop someone with file
+  access from editing it. Passwords are
   stored as salted PBKDF2-SHA256 hashes. Limit who can sign in to the PC
   and who can open `C:\DealerRevenueRescue\store`.
+- **PINs have no minimum length and no lockout.** The app refuses only a
+  blank PIN. Set your own rule for staff PINs.
 - **Backups are not encrypted.** A backup zip holds the store's deals
   and customer details. Whoever holds the USB stick holds that data.
   Store the stick the way you store paper deal jackets.

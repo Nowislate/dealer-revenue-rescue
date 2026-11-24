@@ -20,7 +20,8 @@ What it does, in order:
    not where it came from: the SHA-256 of the zip, published with the
    release, is the only origin check, and the IT team checks it before
    unzipping (README, SETUP-ONE-PC.md Part 3).
-3. Runs the full test suite from the release folder (skip with
+3. Runs the release's test suite from the release folder; the
+   repository-only builder tests skip there (skip the run with
    ``--skip-tests``, an IT option for a reinstall of a release already
    tested on this PC; ``install.json`` records that it was skipped).
 4. Backs up the store's existing data, if any, into ``store\\backups``.
