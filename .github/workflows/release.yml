@@ -1,0 +1,107 @@
+name: Publish a release
+# Run by hand from the Actions tab (or the API) on the public repository.
+# Builds the release zip on Linux and on Windows, refuses unless both
+# builds have the same SHA-256, installs it on Windows with INSTALL.cmd
+# (which runs the full suite), then publishes the GitHub release with the
+# zip and its SHA-256. On a pull request it builds and checks only.
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish the release (false = build and check only)
+        type: boolean
+        default: true
+permissions:
+  contents: read
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.zip.outputs.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14'
+      - id: zip
+        run: |
+          python scripts/build_windows_release.py --out dist | tee build.txt
+          echo "sha=$(grep '^sha256 ' build.txt | cut -d' ' -f2 | tr -d '\r')" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-zip
+          path: dist/*.zip
+
+  build-windows:
+    runs-on: windows-latest
+    outputs:
+      sha: ${{ steps.zip.outputs.sha }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14'
+      - id: zip
+        shell: bash
+        run: |
+          python scripts/build_windows_release.py --out dist | tee build.txt
+          echo "sha=$(grep '^sha256 ' build.txt | cut -d' ' -f2 | tr -d '\r')" >> "$GITHUB_OUTPUT"
+      - name: Install from the zip (runs the full suite)
+        shell: pwsh
+        env:
+          DP_NO_PAUSE: '1'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Get-ChildItem "dist\DealerRevenueRescue-*.zip" | Select-Object -First 1
+          Expand-Archive $zip.FullName -DestinationPath "$env:RUNNER_TEMP\release"
+          $release = Get-ChildItem "$env:RUNNER_TEMP\release" -Directory | Select-Object -First 1
+          & "$($release.FullName)\INSTALL.cmd" --target "$env:RUNNER_TEMP\DealerRevenueRescue" --desktop "$env:RUNNER_TEMP\Desktop"
+          if ($LASTEXITCODE -ne 0) { throw "INSTALL.cmd failed: $LASTEXITCODE" }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-zip-windows
+          path: dist/*.zip
+
+  publish:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Both builds must match
+        env:
+          LINUX: ${{ needs.build-linux.outputs.sha }}
+          WINDOWS: ${{ needs.build-windows.outputs.sha }}
+        run: |
+          echo "linux   $LINUX"
+          echo "windows $WINDOWS"
+          test -n "$LINUX" && test "$LINUX" = "$WINDOWS"
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-zip
+          path: dist
+      - name: Publish
+        env:
+          PUBLISH: ${{ inputs.publish }}
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ needs.build-linux.outputs.sha }}
+        run: |
+          version=$(python3 -c "import re;print(re.search(r'__version__ = \"([^\"]+)\"', open('src/dealerpaperwork/__init__.py').read()).group(1))")
+          zip="dist/DealerRevenueRescue-$version.zip"
+          test -f "$zip"
+          echo "$(sha256sum "$zip" | cut -d' ' -f1)" | grep -qx "$SHA"
+          echo "$SHA  DealerRevenueRescue-$version.zip" > "dist/DealerRevenueRescue-$version.zip.sha256"
+          sed "s/@SHA256@/$SHA/; s/@VERSION@/$version/g" docs/RELEASE-NOTES.md > notes.md
+          cat notes.md
+          if [ "$PUBLISH" != "true" ]; then echo "Check only: not published."; exit 0; fi
+          gh release create "v$version" "$zip" "dist/DealerRevenueRescue-$version.zip.sha256" \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Dealer Revenue Rescue $version" --notes-file notes.md

@@ -1,0 +1,85 @@
+name: Windows walk-through screenshots
+# Drives the real app on a Windows machine, screen by screen, and keeps
+# the screenshots as a downloadable artifact. Nothing reaches paper: the
+# printer is a recording one, and each print job's PDF is kept instead.
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  store-forms:
+    # A store's own forms, when this repository holds them (a private
+    # folder that never ships). Exported once to 300 DPI JPEG pages, the
+    # way a store exports its forms for the app.
+    runs-on: ubuntu-latest
+    outputs:
+      present: ${{ steps.check.outputs.present }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - id: check
+        run: |
+          if [ -f private-forms/forms.json ]; then echo "present=yes" >> "$GITHUB_OUTPUT"; else echo "present=no" >> "$GITHUB_OUTPUT"; fi
+      - name: Export the forms to JPEG pages
+        if: steps.check.outputs.present == 'yes'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils
+          python3 private-forms/render_pages.py "$RUNNER_TEMP/store-forms"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: steps.check.outputs.present == 'yes'
+        with:
+          name: store-forms-pages
+          path: ${{ runner.temp }}/store-forms
+          retention-days: 1
+
+  walkthrough:
+    needs: store-forms
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14'
+      - name: Walk the app and screenshot each screen (Florida store)
+        run: python scripts/windows_walkthrough.py --out "$env:RUNNER_TEMP\walkthrough\florida"
+      - name: Walk a store that types its own rules (Decision 22)
+        if: always()
+        run: python scripts/windows_walkthrough.py --out "$env:RUNNER_TEMP\walkthrough\typed-rules" --typed-rules
+      - name: Build the release zip and install it with INSTALL.cmd
+        if: always()
+        run: |
+          python scripts/build_windows_release.py --out "$env:RUNNER_TEMP\dist"
+          $zip = Get-ChildItem "$env:RUNNER_TEMP\dist\*.zip" | Select-Object -First 1
+          Expand-Archive $zip.FullName -DestinationPath "$env:RUNNER_TEMP\unzipped"
+          $release = Get-ChildItem "$env:RUNNER_TEMP\unzipped" -Directory | Select-Object -First 1
+          New-Item -ItemType Directory -Force "$env:RUNNER_TEMP\walkthrough\installed" | Out-Null
+          $env:DP_NO_PAUSE = "1"
+          cmd /c "`"$($release.FullName)\INSTALL.cmd`" --target `"$env:RUNNER_TEMP\DealerRevenueRescue`"" 2>&1 |
+            Tee-Object "$env:RUNNER_TEMP\walkthrough\installed\install-output.txt"
+          if ($LASTEXITCODE -ne 0) { throw "INSTALL.cmd exited $LASTEXITCODE" }
+          Get-ChildItem "$env:RUNNER_TEMP\DealerRevenueRescue" -Recurse -Depth 1 |
+            Select-Object FullName | Out-File "$env:RUNNER_TEMP\walkthrough\installed\installed-files.txt"
+          Get-ChildItem ([Environment]::GetFolderPath('Desktop')) -Filter *.lnk |
+            Select-Object FullName | Out-File -Append "$env:RUNNER_TEMP\walkthrough\installed\installed-files.txt"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        if: always() && needs.store-forms.outputs.present == 'yes'
+        with:
+          name: store-forms-pages
+          path: ${{ runner.temp }}\store-forms
+      - name: Run the installed copy, add the store's forms, print the drill pack
+        if: always()
+        run: |
+          $forms = @()
+          if (Test-Path "$env:RUNNER_TEMP\store-forms\forms.json") { $forms = @("--forms", "$env:RUNNER_TEMP\store-forms") }
+          python scripts/windows_walkthrough.py --out "$env:RUNNER_TEMP\walkthrough\installed" --app-src "$env:RUNNER_TEMP\DealerRevenueRescue\app" @forms
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: windows-walkthrough
+          path: ${{ runner.temp }}/walkthrough
+          retention-days: 14

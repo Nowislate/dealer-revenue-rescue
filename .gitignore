@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+# Local dealer data must never be committed by accident:
+config/local_preset.json
+config/setup.json
+config/print_config.json
+data/
+*.log
+
+# Archives (keep exported histories and bundles out of the repo):
+*.zip

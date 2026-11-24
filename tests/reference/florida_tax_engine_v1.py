@@ -1,0 +1,235 @@
+"""Florida retail calculation engine (build specification, Section 9).
+
+Deterministic code only -- no AI decides tax, payment, or APR. The engine
+applies the dealer-approved presets; the numbers it produces are the only
+numbers that flow onto documents in later stages.
+
+The 12-step retail order from spec Section 9 is implemented literally,
+one step at a time, in ``calculate_retail_deal``. Mapping notes where the
+spec wording needed pinning down:
+
+* Step 3 adds TAXABLE dealer-required fees (the dealer fee and similar
+  buyer-must-pay preparation/settlement/closing/handling/delivery
+  charges). State-mandated title/registration/lien fees are NOT added
+  here; they enter untaxed at step 11.
+* The electronic tag fee IS taxed (Decision 14, Lane 2026-11-02): it
+  is a dealer charge for a private tag service, not a government
+  agency fee, so it joins the step 3 taxable dealer-required charges
+  in the taxable base. (The spec's original treatment -- fee added
+  after tax at step 12, per the Section 9 fixture's "not used in the
+  tax lines" wording -- is superseded.) It is never presented as a
+  step 11 government fee.
+* Step 6 is a negative rule: manufacturer rebate, cash down payment,
+  amount financed, and trade lien payoff are NOT subtracted before tax.
+  The rebate is applied at step 12, after tax, as a payment.
+* Step 9 surtax: applied to the first $5,000 of the taxable base at the
+  buyer's residence-county rate. NOTE (spec Section 16): whether a trade
+  that drops the base below $5,000 changes the surtax base is flagged
+  unverified. Stage 1 follows the plain rule (surtax on the reduced
+  base, capped at $5,000) and attaches a warning to the result whenever
+  the base is below $5,000, so a later stage can flag the deal for human
+  confirmation instead of the engine deciding silently.
+* Step 12 is implemented exactly as the spec lists it. The trade lien
+  payoff is carried on the inputs and shown on the worksheet as the
+  net-trade line (allowance - payoff) for transparency; per the spec's
+  step-12 list it does not change the step-12 total in Stage 1.
+
+Rounding: state tax and county surtax are each rounded to cents
+(ROUND_HALF_UP) at steps 8 and 9 -- the steps where the spec fixes
+amounts -- and every money line is carried at cents thereafter.
+"""
+
+from __future__ import annotations
+
+from decimal import ROUND_HALF_UP, Decimal
+from typing import Optional
+
+from dealerpaperwork.models import ZERO, DealInputs, DealResult
+from dealerpaperwork.presets import Preset, require_approved
+
+CENTS = Decimal("0.01")
+SURTAX_CAP = Decimal("5000")
+DEFAULT_STATE_RATE = Decimal("0.06")
+
+
+def cents(amount: Decimal) -> Decimal:
+    """Round a money amount to cents, half-up (standard retail rounding)."""
+    return amount.quantize(CENTS, rounding=ROUND_HALF_UP)
+
+
+def installment_terms(
+    principal: Decimal,
+    annual_rate: Decimal,
+    term_months: int,
+    days_to_first_payment: Optional[int] = None,
+) -> tuple[Decimal, Decimal, Decimal]:
+    """Monthly payment, total of payments and finance charge.
+
+    Equal monthly payments, interest at ``annual_rate / 12`` per
+    month. The first period runs ``days_to_first_payment`` days (None
+    = 30, one regular month). It is split into whole 30-day months
+    plus a fraction ``f`` of a month carrying simple interest, the
+    federal Truth in Lending actuarial method (Regulation Z, Appendix
+    J): the amount financed equals each payment discounted by
+    ``(1 + f*i) * (1 + i) ** (q + t - 1)``. This reproduces the DMS
+    retail worksheet to the cent, including a 45-day first payment.
+    The finance charge is total of payments minus the principal, so
+    every cent of payment rounding lands in it.
+    """
+    if term_months is None or term_months <= 0:
+        raise ValueError("Term must be a positive number of months.")
+    days = 30 if days_to_first_payment is None else int(days_to_first_payment)
+    if days <= 0:
+        raise ValueError("Days to first payment must be positive.")
+    principal = cents(principal)
+    i = annual_rate / Decimal("12")
+    if i == ZERO:
+        payment = cents(principal / term_months)
+    else:
+        # days / 30 = q whole months + fraction f. The first payment's
+        # discount is (1 + f*i) * (1 + i) ** q, later ones one more
+        # month each; with the annuity counted from t = 1 that leaves
+        # (1 + i) ** (q - 1). q = 1, f = 0 is the ordinary case.
+        q, extra = divmod(days, 30)
+        f = Decimal(extra) / Decimal(30)
+        whole = q - 1
+        one = Decimal("1")
+        annuity = (one - (one + i) ** -term_months) / i
+        payment = cents(principal * (one + f * i) * (one + i) ** whole / annuity)
+    total = cents(payment * term_months)
+    return payment, total, cents(total - principal)
+
+
+def calculate_retail_deal(
+    inputs: DealInputs,
+    *,
+    preset: Optional[Preset] = None,
+    certify: bool = False,
+) -> DealResult:
+    """Run the spec Section 9 retail calculation.
+
+    ``certify=True`` means the result will be certified for clean
+    printing (spec Section 8): that requires an approved, valid preset
+    set, enforced by ``presets.require_approved``. Draft/estimate
+    calculations (``certify=False``) may run without one.
+    """
+    if certify:
+        require_approved(preset)
+
+    state_rate = preset.state_tax_rate if preset is not None else DEFAULT_STATE_RATE
+
+    # --- The 12 steps, in spec order -------------------------------------
+    # Step 1: vehicle selling price (includes destination/freight).
+    price = inputs.selling_price
+    # Step 2: add dealer-installed accessories and add-ons.
+    with_accessories = price + inputs.accessories
+    # Step 3: add taxable dealer-required fees (dealer fee + other
+    # taxable preparation/settlement/closing/handling/delivery charges).
+    # State-mandated title/registration/lien fees are NOT added here.
+    taxable_fees = inputs.dealer_fee + inputs.other_taxable_fees
+    # The electronic tag fee is taxed too (Decision 14): a private tag
+    # service charged by the dealer, not a government agency fee. It
+    # enters the base here, as its own worksheet line below.
+    electronic_tag_fee = cents(inputs.electronic_tag_fee)
+    # Step 4: gross sales price.
+    gross = with_accessories + taxable_fees + electronic_tag_fee
+    # Step 5: subtract the dealer's own discount given at the time of sale.
+    after_discount = gross - inputs.dealer_discount
+    # Step 6: do NOT subtract manufacturer rebate, cash down payment,
+    # amount financed, or the trade lien payoff. (No code: that is the
+    # rule. The rebate is applied at step 12.)
+    # Step 7: subtract the trade-in allowance -> taxable base.
+    trade_allowance = inputs.trade.allowance if inputs.trade else ZERO
+    trade_payoff = inputs.trade.payoff if inputs.trade else ZERO
+    taxable_base = after_discount - trade_allowance
+    if taxable_base < ZERO:
+        taxable_base = ZERO
+    taxable_base = cents(taxable_base)
+    # Step 8: state tax = 6% of the taxable base (rate from preset data).
+    state_tax = cents(taxable_base * state_rate)
+    # Step 9: county surtax = buyer's residence-county rate applied only
+    # to the first $5,000 of the taxable base.
+    surtax_base = min(taxable_base, SURTAX_CAP)
+    county_surtax = cents(surtax_base * inputs.county_surtax_rate)
+    # Step 10: total sales tax.
+    total_tax = state_tax + county_surtax
+    # Step 11: government fees are added after tax, untaxed, when
+    # separately itemised and state-mandated (amounts confirmed per deal).
+    government_fees = cents(inputs.government_fees)
+    # Step 12: amount due / amount financed, exactly as the spec lists:
+    # gross price - dealer discount - trade allowance + total sales tax
+    # + government fees + optional products - manufacturer rebate
+    # (after tax, as a payment) - cash down payment.
+    # The electronic tag fee is already inside the gross price (step 3,
+    # Decision 14) -- it is NOT added again here.
+    amount_due = cents(
+        gross
+        - inputs.dealer_discount
+        - trade_allowance
+        + total_tax
+        + government_fees
+        + inputs.optional_products
+        - inputs.manufacturer_rebate
+        - inputs.cash_down_payment
+    )
+
+    warnings: list[str] = []
+    if ZERO < taxable_base < SURTAX_CAP:
+        warnings.append(
+            "Taxable base is below $5,000: whether the county surtax "
+            "applies to the reduced base or to $5,000 of price is "
+            "flagged unverified in spec Section 16. Stage 1 applies the "
+            "surtax to the reduced base; a human must confirm this deal."
+        )
+
+    lines: tuple[tuple[str, Decimal], ...] = (
+        ("Vehicle selling price", cents(price)),
+        ("Accessories and add-ons", cents(inputs.accessories)),
+        ("Taxable dealer-required fees", cents(taxable_fees)),
+        ("Electronic tag fee (taxable, Decision 14)", electronic_tag_fee),
+        ("Gross sales price", cents(gross)),
+        ("Dealer discount", cents(-inputs.dealer_discount)),
+        ("Trade-in allowance", cents(-trade_allowance)),
+        ("Taxable base", taxable_base),
+        ("State tax (6%)", state_tax),
+        ("County surtax base (first $5,000)", surtax_base),
+        ("County surtax", county_surtax),
+        ("Total sales tax", total_tax),
+        ("Government fees (untaxed)", government_fees),
+        ("Optional products elected", cents(inputs.optional_products)),
+        ("Trade lien payoff (not subtracted before tax)", cents(trade_payoff)),
+        ("Net trade (allowance - payoff)", cents(trade_allowance - trade_payoff)),
+        ("Manufacturer rebate (applied after tax)", cents(-inputs.manufacturer_rebate)),
+        ("Cash down payment", cents(-inputs.cash_down_payment)),
+        ("Step 12 amount due (payoff not netted)", amount_due),
+    )
+
+    # --- Payment estimate (only when term and rate were supplied) -------
+    amount_financed: Optional[Decimal] = None
+    monthly_payment: Optional[Decimal] = None
+    total_of_payments: Optional[Decimal] = None
+    finance_charge: Optional[Decimal] = None
+    if inputs.term_months and inputs.annual_rate is not None:
+        amount_financed = amount_due
+        monthly_payment, total_of_payments, finance_charge = installment_terms(
+            amount_financed, inputs.annual_rate, inputs.term_months,
+            inputs.days_to_first_payment,
+        )
+
+    return DealResult(
+        gross_sales_price=cents(gross),
+        taxable_base=taxable_base,
+        state_tax=state_tax,
+        surtax_base=surtax_base,
+        county_surtax=county_surtax,
+        total_tax=total_tax,
+        government_fees=government_fees,
+        electronic_tag_fee=cents(inputs.electronic_tag_fee),
+        amount_due=amount_due,
+        amount_financed=amount_financed,
+        monthly_payment=monthly_payment,
+        total_of_payments=total_of_payments,
+        finance_charge=finance_charge,
+        lines=lines,
+        warnings=tuple(warnings),
+    )

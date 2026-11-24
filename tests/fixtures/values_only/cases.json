@@ -1,0 +1,112 @@
+{
+  "normal": {
+    "fields": [
+      {
+        "field_name": "buyer_name",
+        "page": 1,
+        "x_mm": 25,
+        "y_mm": 40,
+        "font_size": 11
+      }
+    ],
+    "values": {
+      "buyer_name": "Ada (Buyer) \\ Co \u2013 Caf\u00e9\nSecond",
+      "deal_date": "11/02/2026"
+    },
+    "banner": null,
+    "offsets_mm": null,
+    "sha256": "d20d951fbb1919d412390c835347c3b8d14baa489c5f22cfada8418e14ff0b10"
+  },
+  "draft": {
+    "fields": [
+      {
+        "field_name": "buyer_name",
+        "page": 1,
+        "x_mm": 25,
+        "y_mm": 40,
+        "font_size": 11
+      }
+    ],
+    "values": {
+      "buyer_name": "Ada (Buyer) \\ Co \u2013 Caf\u00e9\nSecond",
+      "deal_date": "11/02/2026"
+    },
+    "banner": "DRAFT",
+    "offsets_mm": null,
+    "sha256": "3704577180fa052ee77e9240f5a790fdd98da7ed79365fc5bae279d674c19620"
+  },
+  "sample": {
+    "fields": [
+      {
+        "field_name": "buyer_name",
+        "page": 1,
+        "x_mm": 25,
+        "y_mm": 40,
+        "font_size": 11
+      }
+    ],
+    "values": {
+      "buyer_name": "Ada (Buyer) \\ Co \u2013 Caf\u00e9\nSecond",
+      "deal_date": "11/02/2026"
+    },
+    "banner": "SAMPLE",
+    "offsets_mm": null,
+    "sha256": "020c93708043c220bef218d950ec5746a704a50f3cce3bf7eaf2bec9da74b660"
+  },
+  "calibration": {
+    "fields": [
+      {
+        "field_name": "buyer_name",
+        "page": 1,
+        "x_mm": 25,
+        "y_mm": 40,
+        "font_size": 11
+      }
+    ],
+    "values": {
+      "buyer_name": "Ada (Buyer) \\ Co \u2013 Caf\u00e9\nSecond",
+      "deal_date": "11/02/2026"
+    },
+    "banner": null,
+    "offsets_mm": {
+      "x_mm": 2,
+      "y_mm": -1
+    },
+    "sha256": "ab7e6e9afb5b56c842274a4d3f8ffd8e3d5b387ca1a6245a2e5a3c4bd0874658"
+  },
+  "sparse": {
+    "fields": [
+      {
+        "field_name": "buyer_name",
+        "page": 1,
+        "x_mm": 25,
+        "y_mm": 40,
+        "font_size": 11
+      },
+      {
+        "field_name": "deal_date",
+        "page": 3,
+        "x_mm": 20,
+        "y_mm": 60,
+        "font_size": 10
+      }
+    ],
+    "values": {
+      "buyer_name": "Ada (Buyer) \\ Co \u2013 Caf\u00e9\nSecond",
+      "deal_date": "11/02/2026"
+    },
+    "banner": null,
+    "offsets_mm": null,
+    "sha256": "64cbe02d6928288a1c1db87228e1e8e628648fe9a1f010e0a32a0a3ec242e89d"
+  },
+  "empty": {
+    "fields": [],
+    "values": {
+      "buyer_name": "Ada (Buyer) \\ Co \u2013 Caf\u00e9\nSecond",
+      "deal_date": "11/02/2026"
+    },
+    "banner": null,
+    "offsets_mm": null,
+    "sha256": "69cb5ccbe1d0686e11a8483f7e576d35119bb3502f425d2d16bb2af5f5d59c69"
+  }
+}

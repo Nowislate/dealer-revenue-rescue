@@ -1,0 +1,1554 @@
+{
+  "source_revision": "fe83b82902a3637ee3f431ba11c115c8dfe30e9b",
+  "source_contract": "Actual baseline-generated synthetic retail/lease legacy states; no product helper under test authored these fingerprints.",
+  "fixtures": {
+    "retail": {
+      "setup": {
+        "state": "complete",
+        "completed": true,
+        "completed_at": "2026-01-01T10:00:00",
+        "selected_printer": "FakePrinter - F&I (Long Stock)",
+        "tray_mapping": {
+          "standard_letter": {
+            "document_class": "standard_letter",
+            "printer_name": "FakePrinter - Office (Letter)",
+            "tray": "Tray 1",
+            "paper": "Letter",
+            "alignment_offsets_mm": {}
+          }
+        },
+        "preset": {
+          "approved_at": "2026-01-01T09:00:00",
+          "approved_by": "Sample Manager (SAMPLE)",
+          "county_surtax_rates": {
+            "Example County": "0.010",
+            "Sample County": "0.015"
+          },
+          "dealer": {
+            "city": "Sample City",
+            "contact_email": "sample@example.invalid",
+            "dealer_fee": "1199.00",
+            "disclosure_501_976_18_confirmed": true,
+            "electronic_tag_fee": "199.00",
+            "franchise_info": "Sample franchise (SAMPLE)",
+            "legal_name": "Sample Motors LLC (SAMPLE)",
+            "licence_number": "SAMPLE-LICENCE-000",
+            "phone": "555-0100",
+            "state": "FL",
+            "street_address": "100 Sample Street",
+            "title_filing_method": "in-house EFS (SAMPLE choice)",
+            "trading_name": "Sample Motors (SAMPLE)",
+            "zip_code": "00000"
+          },
+          "state_tax_rate": "0.06",
+          "version": "sample-1"
+        }
+      },
+      "deal": {
+        "deal_id": "3cd168fbc4b0",
+        "format_version": "stage3-1",
+        "packaging_details": {},
+        "is_drill": false,
+        "created_by": "fay",
+        "created_at": "2026-11-13T16:14:19-05:00",
+        "current_step": "certified",
+        "state": "ready_to_print",
+        "watermark": null,
+        "inputs": {
+          "buyer": {
+            "full_name": "Sample Buyer",
+            "co_buyer_name": null,
+            "street_address": "",
+            "city": "",
+            "state": "FL",
+            "zip_code": "",
+            "residence_county": "Sample County"
+          },
+          "vehicle": {
+            "year": 2026,
+            "make": "Sample",
+            "model": "Vehicle",
+            "vin": "1SAMPLEVIN0000000",
+            "is_new": true,
+            "stock_number": ""
+          },
+          "trade": {
+            "description": "Sample trade",
+            "vin": "",
+            "allowance": "10000",
+            "payoff": "0"
+          },
+          "selling_price": "35000",
+          "accessories": "0",
+          "dealer_fee": "1199.00",
+          "other_taxable_fees": "0",
+          "dealer_discount": "0",
+          "county_surtax_rate": "0.015",
+          "government_fees": "0",
+          "electronic_tag_fee": "199.00",
+          "optional_products": "0",
+          "manufacturer_rebate": "0",
+          "cash_down_payment": "0",
+          "term_months": null,
+          "annual_rate": null
+        },
+        "worksheet_fingerprint": "{\"accessories\": \"0\", \"annual_rate\": null, \"buyer\": {\"city\": \"\", \"co_buyer_name\": null, \"full_name\": \"Sample Buyer\", \"residence_county\": \"Sample County\", \"state\": \"FL\", \"street_address\": \"\", \"zip_code\": \"\"}, \"cash_down_payment\": \"0\", \"county_surtax_rate\": \"0.015\", \"dealer_discount\": \"0\", \"dealer_fee\": \"1199.00\", \"electronic_tag_fee\": \"199.00\", \"government_fees\": \"0\", \"manufacturer_rebate\": \"0\", \"optional_products\": \"0\", \"other_taxable_fees\": \"0\", \"selling_price\": \"35000\", \"term_months\": null, \"trade\": {\"allowance\": \"10000\", \"description\": \"Sample trade\", \"payoff\": \"0\", \"vin\": \"\"}, \"vehicle\": {\"is_new\": true, \"make\": \"Sample\", \"model\": \"Vehicle\", \"stock_number\": \"\", \"vin\": \"1SAMPLEVIN0000000\", \"year\": 2026}}",
+        "worksheet_result": {
+          "gross_sales_price": "36398.00",
+          "taxable_base": "26398.00",
+          "state_tax": "1583.88",
+          "surtax_base": "5000",
+          "county_surtax": "75.00",
+          "total_tax": "1658.88",
+          "government_fees": "0.00",
+          "electronic_tag_fee": "199.00",
+          "amount_due": "28056.88",
+          "amount_financed": null,
+          "monthly_payment": null,
+          "total_of_payments": null,
+          "finance_charge": null,
+          "lines": [
+            [
+              "Vehicle selling price",
+              "35000.00"
+            ],
+            [
+              "Accessories and add-ons",
+              "0.00"
+            ],
+            [
+              "Taxable dealer-required fees",
+              "1199.00"
+            ],
+            [
+              "Electronic tag fee (taxable, Decision 14)",
+              "199.00"
+            ],
+            [
+              "Gross sales price",
+              "36398.00"
+            ],
+            [
+              "Dealer discount",
+              "0.00"
+            ],
+            [
+              "Trade-in allowance",
+              "-10000.00"
+            ],
+            [
+              "Taxable base",
+              "26398.00"
+            ],
+            [
+              "State tax (6%)",
+              "1583.88"
+            ],
+            [
+              "County surtax base (first $5,000)",
+              "5000"
+            ],
+            [
+              "County surtax",
+              "75.00"
+            ],
+            [
+              "Total sales tax",
+              "1658.88"
+            ],
+            [
+              "Government fees (untaxed)",
+              "0.00"
+            ],
+            [
+              "Optional products elected",
+              "0.00"
+            ],
+            [
+              "Trade lien payoff (not subtracted before tax)",
+              "0.00"
+            ],
+            [
+              "Net trade (allowance - payoff)",
+              "10000.00"
+            ],
+            [
+              "Manufacturer rebate (applied after tax)",
+              "0.00"
+            ],
+            [
+              "Cash down payment",
+              "0.00"
+            ],
+            [
+              "Amount due / amount financed",
+              "28056.88"
+            ]
+          ],
+          "warnings": []
+        },
+        "financing": {
+          "selling_price": "35000.00",
+          "total_tax": "1658.88",
+          "electronic_tag_fee": "199.00",
+          "other_non_tax_fees": "0.00",
+          "subtotal_before_credits": "36857.88",
+          "manufacturer_rebate": "0.00",
+          "cash_down_payment": "0.00",
+          "net_trade_equity": "10000.00",
+          "amount_financed": "26857.88",
+          "lines": [
+            [
+              "Selling price",
+              "35000.00"
+            ],
+            [
+              "Total sales tax",
+              "1658.88"
+            ],
+            [
+              "Electronic tag fee",
+              "199.00"
+            ],
+            [
+              "Other non-tax fees (government + optional)",
+              "0.00"
+            ],
+            [
+              "Subtotal before credits",
+              "36857.88"
+            ],
+            [
+              "Manufacturer rebate",
+              "0.00"
+            ],
+            [
+              "Cash down payment",
+              "0.00"
+            ],
+            [
+              "Net trade equity (allowance - payoff)",
+              "-10000.00"
+            ],
+            [
+              "Amount financed",
+              "26857.88"
+            ]
+          ]
+        },
+        "warnings_acknowledged_by": null,
+        "warnings_acknowledged_at": null,
+        "certification": {
+          "certifier_username": "fay",
+          "certifier_name": "Fay F&I",
+          "certifier_role": "fi",
+          "certified_at": "2026-11-13T16:14:19-05:00",
+          "preset_version": "sample-1",
+          "preset_approved_by": "Sample Manager (SAMPLE)",
+          "preset_approved_at": "2026-01-01T09:00:00",
+          "total_tax": "1658.88",
+          "amount_financed": "26857.88"
+        }
+      },
+      "library": {
+        "documents": [
+          {
+            "approved_at": "2026-11-13T16:14:19-05:00",
+            "approved_by": "Ada Admin",
+            "created_at": "2026-11-13T16:14:19-05:00",
+            "created_by": "",
+            "doc_id": "legacy-form",
+            "fields": [
+              {
+                "field_name": "buyer_name",
+                "font_size": 10.0,
+                "page": 1,
+                "x_mm": 20,
+                "y_mm": 55
+              }
+            ],
+            "source_filename": "legacy.pdf",
+            "status": "approved",
+            "stored_name": "legacy-form.pdf",
+            "title": "SYNTHETIC LEGACY FORM",
+            "when_it_prints": [
+              "retail_new"
+            ]
+          }
+        ],
+        "format_version": "stage5-1"
+      },
+      "source_files": {
+        "legacy-form.pdf": "%PDF-1.4 synthetic legacy form"
+      },
+      "states": {
+        "partial": {
+          "deal_id": "3cd168fbc4b0",
+          "format_version": "stage4-1",
+          "state_version": 2,
+          "draft_only": false,
+          "completion_audited": false,
+          "packaging_fingerprint": "bc190d1a1bb0b791a227a535614f0ef657a7888529105c2483451c354520b398",
+          "packaging_artwork_hashes": {
+            "legacy-form": "e573cda404eabf92b8c6341648d6cd483c37c360052a54e687e13143f9fce149"
+          },
+          "packaging_revision": 1,
+          "packaging_checks": {},
+          "packaging_history": [],
+          "items": {
+            "retail_installment_contract": {
+              "doc_id": "retail_installment_contract",
+              "title": "Retail Installment Contract (LAW)",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "buyers_order": {
+              "doc_id": "buyers_order",
+              "title": "Buyer's Order",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "deal_worksheet": {
+              "doc_id": "deal_worksheet",
+              "title": "Deal Worksheet",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "title_application": {
+              "doc_id": "title_application",
+              "title": "Title Application (HSMV 82040)",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "odometer_statement": {
+              "doc_id": "odometer_statement",
+              "title": "Odometer Disclosure Statement",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "secure_poa": {
+              "doc_id": "secure_poa",
+              "title": "Secure Power of Attorney (HSMV 82995) - PULL FROM SECURE STOCK",
+              "doc_class": "standard_letter",
+              "kind": "secure_stock",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "secure_reassignment": {
+              "doc_id": "secure_reassignment",
+              "title": "Secure Reassignment of Title - PULL FROM SECURE STOCK",
+              "doc_class": "standard_letter",
+              "kind": "secure_stock",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "legacy-form": {
+              "doc_id": "legacy-form",
+              "title": "SYNTHETIC LEGACY FORM",
+              "doc_class": "standard_letter",
+              "kind": "library_doc",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 1,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "paper_packaging_checklist": {
+              "doc_id": "paper_packaging_checklist",
+              "title": "Paper Deal Packaging Checklist",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            }
+          }
+        },
+        "complete": {
+          "deal_id": "3cd168fbc4b0",
+          "format_version": "stage4-1",
+          "state_version": 26,
+          "draft_only": false,
+          "completion_audited": true,
+          "packaging_fingerprint": "bc190d1a1bb0b791a227a535614f0ef657a7888529105c2483451c354520b398",
+          "packaging_artwork_hashes": {
+            "legacy-form": "e573cda404eabf92b8c6341648d6cd483c37c360052a54e687e13143f9fce149"
+          },
+          "packaging_revision": 1,
+          "packaging_checks": {
+            "contract": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "buyers_order": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "title_application": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "odometer": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "insurance": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "payoff": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "form:legacy-form": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            },
+            "privacy": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "lemon_law": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "secure_poa": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "secure_reassignment": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "buyer_copies": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            },
+            "second_review": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "fi_signoff": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            },
+            "assembler_signoff": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            }
+          },
+          "packaging_history": [],
+          "items": {
+            "retail_installment_contract": {
+              "doc_id": "retail_installment_contract",
+              "title": "Retail Installment Contract (LAW)",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 3,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 1
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer",
+                  "lender"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 2,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "buyers_order": {
+              "doc_id": "buyers_order",
+              "title": "Buyer's Order",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 3,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "deal_worksheet": {
+              "doc_id": "deal_worksheet",
+              "title": "Deal Worksheet",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 1,
+                "copy_set": {
+                  "buyer": 0,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 4,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "title_application": {
+              "doc_id": "title_application",
+              "title": "Title Application (HSMV 82040)",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 5,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "odometer_statement": {
+              "doc_id": "odometer_statement",
+              "title": "Odometer Disclosure Statement",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 6,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "secure_poa": {
+              "doc_id": "secure_poa",
+              "title": "Secure Power of Attorney (HSMV 82995) - PULL FROM SECURE STOCK",
+              "doc_class": "standard_letter",
+              "kind": "secure_stock",
+              "status": "pulled",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": "fay",
+              "pulled_at": "2026-11-13T16:14:19-05:00"
+            },
+            "secure_reassignment": {
+              "doc_id": "secure_reassignment",
+              "title": "Secure Reassignment of Title - PULL FROM SECURE STOCK",
+              "doc_class": "standard_letter",
+              "kind": "secure_stock",
+              "status": "pulled",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": "fay",
+              "pulled_at": "2026-11-13T16:14:19-05:00"
+            },
+            "legacy-form": {
+              "doc_id": "legacy-form",
+              "title": "SYNTHETIC LEGACY FORM",
+              "doc_class": "standard_letter",
+              "kind": "library_doc",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 1,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "paper_packaging_checklist": {
+              "doc_id": "paper_packaging_checklist",
+              "title": "Paper Deal Packaging Checklist",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 1,
+                "copy_set": {
+                  "buyer": 0,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 7,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            }
+          }
+        }
+      },
+      "pr4_fingerprint": "e9b804831adff68163b0c4248b7c5723e1fdb2c9e4056dd6d054ab676e0faf43"
+    },
+    "lease": {
+      "setup": {
+        "state": "complete",
+        "completed": true,
+        "completed_at": "2026-01-01T10:00:00",
+        "preset": {
+          "approved_at": "2026-01-01T09:00:00",
+          "approved_by": "Sample Manager (SAMPLE)",
+          "county_surtax_rates": {
+            "Example County": "0.010",
+            "Sample County": "0.015"
+          },
+          "dealer": {
+            "city": "Sample City",
+            "contact_email": "sample@example.invalid",
+            "dealer_fee": "1199.00",
+            "disclosure_501_976_18_confirmed": true,
+            "electronic_tag_fee": "199.00",
+            "franchise_info": "Sample franchise (SAMPLE)",
+            "legal_name": "Sample Motors LLC (SAMPLE)",
+            "licence_number": "SAMPLE-LICENCE-000",
+            "phone": "555-0100",
+            "state": "FL",
+            "street_address": "100 Sample Street",
+            "title_filing_method": "in-house EFS (SAMPLE choice)",
+            "trading_name": "Sample Motors (SAMPLE)",
+            "zip_code": "00000"
+          },
+          "state_tax_rate": "0.06",
+          "version": "sample-1",
+          "lease": {
+            "lessor_name": "Sample Lessor (SAMPLE)",
+            "title_holder": "Sample Lessor (SAMPLE)",
+            "acquisition_fee": "650",
+            "cap_fees": "60",
+            "upfront_charges": "400.00"
+          }
+        },
+        "tray_mapping": {
+          "standard_letter": {
+            "document_class": "standard_letter",
+            "printer_name": "FakePrinter - Office (Letter)",
+            "tray": "Tray 1",
+            "paper": "Letter",
+            "alignment_offsets_mm": {}
+          }
+        },
+        "selected_printer": "FakePrinter - Office (Letter)"
+      },
+      "deal": {
+        "deal_id": "31d38fe2590b",
+        "format_version": "stage6-1",
+        "packaging_details": {},
+        "deal_kind": "lease",
+        "is_drill": false,
+        "created_by": "fay",
+        "created_at": "2026-11-13T16:14:19-05:00",
+        "current_step": "certified",
+        "state": "ready_to_print",
+        "watermark": null,
+        "inputs": {
+          "buyer": {
+            "full_name": "Sample Buyer",
+            "co_buyer_name": null,
+            "street_address": "",
+            "city": "",
+            "state": "FL",
+            "zip_code": "",
+            "residence_county": "Sample County"
+          },
+          "vehicle": {
+            "year": 2026,
+            "make": "Sample",
+            "model": "Vehicle",
+            "vin": "1SAMPLEVIN0000000",
+            "is_new": true,
+            "stock_number": ""
+          },
+          "term_months": 36,
+          "money_factor": "0.00150",
+          "residual_percent": "0.62",
+          "mrm": null,
+          "county_surtax_rate": "0.015",
+          "number_of_advance_payments": 1,
+          "msrp": "30000",
+          "dealer_discount": "1500",
+          "aftermarkets": "0",
+          "predelivery_fee": "1199.00",
+          "acquisition_fee": "650",
+          "esc_premium": "0",
+          "maintenance": "0",
+          "gap_premium": "0",
+          "lah_iui": "0",
+          "prior_lease_balance": "0",
+          "license_fee": "0",
+          "dealer_fees": "0",
+          "cap_fees": "60",
+          "cap_taxes": "0",
+          "cash_down": "0",
+          "total_rebates": "0",
+          "trade_allowance": "0",
+          "trade_payoff": "0",
+          "amount_applied_upfront": "0",
+          "cash_back": "0",
+          "residual_base_msrp": "30000",
+          "option_package_discount": "0",
+          "hard_adds": "0",
+          "mileage_adjustment": "0",
+          "upfront_charges": "400.00",
+          "security_deposit": "0"
+        },
+        "worksheet_fingerprint": "{\"acquisition_fee\": \"650\", \"aftermarkets\": \"0\", \"amount_applied_upfront\": \"0\", \"buyer\": {\"city\": \"\", \"co_buyer_name\": null, \"full_name\": \"Sample Buyer\", \"residence_county\": \"Sample County\", \"state\": \"FL\", \"street_address\": \"\", \"zip_code\": \"\"}, \"cap_fees\": \"60\", \"cap_taxes\": \"0\", \"cash_back\": \"0\", \"cash_down\": \"0\", \"county_surtax_rate\": \"0.015\", \"dealer_discount\": \"1500\", \"dealer_fees\": \"0\", \"esc_premium\": \"0\", \"gap_premium\": \"0\", \"hard_adds\": \"0\", \"lah_iui\": \"0\", \"license_fee\": \"0\", \"maintenance\": \"0\", \"mileage_adjustment\": \"0\", \"money_factor\": \"0.00150\", \"mrm\": null, \"msrp\": \"30000\", \"number_of_advance_payments\": 1, \"option_package_discount\": \"0\", \"predelivery_fee\": \"1199.00\", \"prior_lease_balance\": \"0\", \"residual_base_msrp\": \"30000\", \"residual_percent\": \"0.62\", \"security_deposit\": \"0\", \"term_months\": 36, \"total_rebates\": \"0\", \"trade_allowance\": \"0\", \"trade_payoff\": \"0\", \"upfront_charges\": \"400.00\", \"vehicle\": {\"is_new\": true, \"make\": \"Sample\", \"model\": \"Vehicle\", \"stock_number\": \"\", \"vin\": \"1SAMPLEVIN0000000\", \"year\": 2026}}",
+        "worksheet_result": {
+          "combined_tax_rate": "0.075",
+          "lines": [
+            [
+              "MSRP",
+              "30000.00"
+            ],
+            [
+              "Dealer discount",
+              "-1500.00"
+            ],
+            [
+              "Selling price",
+              "28500.00"
+            ],
+            [
+              "Aftermarkets",
+              "0.00"
+            ],
+            [
+              "Predelivery service fee",
+              "1199.00"
+            ],
+            [
+              "Acquisition fee",
+              "650.00"
+            ],
+            [
+              "ESC premium",
+              "0.00"
+            ],
+            [
+              "Maintenance",
+              "0.00"
+            ],
+            [
+              "GAP premium",
+              "0.00"
+            ],
+            [
+              "LAH/IUI",
+              "0.00"
+            ],
+            [
+              "Prior lease balance",
+              "0.00"
+            ],
+            [
+              "License fee",
+              "0.00"
+            ],
+            [
+              "Dealer fees",
+              "0.00"
+            ],
+            [
+              "Cap fees",
+              "60.00"
+            ],
+            [
+              "Cap taxes",
+              "0.00"
+            ],
+            [
+              "Gross cap cost",
+              "30409.00"
+            ],
+            [
+              "Cash down",
+              "0.00"
+            ],
+            [
+              "Total rebates",
+              "0.00"
+            ],
+            [
+              "Trade allowance",
+              "0.00"
+            ],
+            [
+              "Trade payoff",
+              "0.00"
+            ],
+            [
+              "Net trade (allowance - payoff)",
+              "0.00"
+            ],
+            [
+              "Amount applied upfront",
+              "0.00"
+            ],
+            [
+              "Cash back",
+              "0.00"
+            ],
+            [
+              "Total cap reduction",
+              "0.00"
+            ],
+            [
+              "Net (adjusted) cap cost",
+              "30409.00"
+            ],
+            [
+              "Residual base MSRP",
+              "30000.00"
+            ],
+            [
+              "Option package discount",
+              "0.00"
+            ],
+            [
+              "Hard adds",
+              "0.00"
+            ],
+            [
+              "Adjusted MSRP",
+              "30000.00"
+            ],
+            [
+              "Residual base (after MRM cap)",
+              "30000.00"
+            ],
+            [
+              "Residual amount",
+              "18600.00"
+            ],
+            [
+              "Mileage adjustment",
+              "0.00"
+            ],
+            [
+              "Adjusted residual",
+              "18600.00"
+            ],
+            [
+              "Monthly depreciation",
+              "328.03"
+            ],
+            [
+              "Monthly rent charge",
+              "73.51"
+            ],
+            [
+              "Base monthly payment",
+              "401.54"
+            ],
+            [
+              "Combined tax rate (state + county surtax)",
+              "0.075"
+            ],
+            [
+              "Monthly tax (on the base payment)",
+              "30.12"
+            ],
+            [
+              "Monthly payment",
+              "431.66"
+            ],
+            [
+              "Advanced payment",
+              "431.66"
+            ],
+            [
+              "Upfront charges",
+              "400.00"
+            ],
+            [
+              "Security deposit",
+              "0.00"
+            ],
+            [
+              "Due on delivery",
+              "831.66"
+            ]
+          ],
+          "warnings": [],
+          "selling_price": "28500.00",
+          "gross_cap_cost": "30409.00",
+          "net_trade": "0.00",
+          "total_cap_reduction": "0.00",
+          "net_cap_cost": "30409.00",
+          "adjusted_msrp": "30000.00",
+          "residual_base": "30000.00",
+          "residual_amount": "18600.00",
+          "adjusted_residual": "18600.00",
+          "monthly_depreciation": "328.03",
+          "monthly_rent_charge": "73.51",
+          "base_monthly_payment": "401.54",
+          "monthly_tax": "30.12",
+          "monthly_payment": "431.66",
+          "advanced_payment": "431.66",
+          "upfront_charges": "400.00",
+          "security_deposit": "0.00",
+          "due_on_delivery": "831.66"
+        },
+        "certification": {
+          "certifier_username": "fay",
+          "certifier_name": "Fay F&I",
+          "certifier_role": "fi",
+          "certified_at": "2026-11-13T16:14:19-05:00",
+          "preset_version": "sample-1",
+          "preset_approved_by": "Sample Manager (SAMPLE)",
+          "preset_approved_at": "2026-01-01T09:00:00",
+          "lessor_name": "Sample Lessor (SAMPLE)",
+          "monthly_payment": "431.66",
+          "monthly_tax": "30.12",
+          "due_on_delivery": "831.66"
+        }
+      },
+      "library": {
+        "documents": [
+          {
+            "approved_at": "2026-11-13T16:14:19-05:00",
+            "approved_by": "Ada Admin",
+            "created_at": "2026-11-13T16:14:19-05:00",
+            "created_by": "",
+            "doc_id": "legacy-form",
+            "fields": [
+              {
+                "field_name": "buyer_name",
+                "font_size": 10.0,
+                "page": 1,
+                "x_mm": 20,
+                "y_mm": 55
+              }
+            ],
+            "source_filename": "legacy.pdf",
+            "status": "approved",
+            "stored_name": "legacy-form.pdf",
+            "title": "SYNTHETIC LEGACY FORM",
+            "when_it_prints": [
+              "lease"
+            ]
+          }
+        ],
+        "format_version": "stage5-1"
+      },
+      "source_files": {
+        "legacy-form.pdf": "%PDF-1.4 synthetic legacy form"
+      },
+      "states": {
+        "partial": {
+          "deal_id": "31d38fe2590b",
+          "format_version": "stage4-1",
+          "state_version": 2,
+          "draft_only": false,
+          "completion_audited": false,
+          "packaging_fingerprint": "dd1ec64ebea1928d8f08cc1f9b5cffde02816f6d9e67cdd01088cd02fae478b1",
+          "packaging_artwork_hashes": {
+            "legacy-form": "e573cda404eabf92b8c6341648d6cd483c37c360052a54e687e13143f9fce149"
+          },
+          "packaging_revision": 1,
+          "packaging_checks": {},
+          "packaging_history": [],
+          "items": {
+            "lease_worksheet": {
+              "doc_id": "lease_worksheet",
+              "title": "Lease Worksheet",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "legacy-form": {
+              "doc_id": "legacy-form",
+              "title": "SYNTHETIC LEGACY FORM",
+              "doc_class": "standard_letter",
+              "kind": "library_doc",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 1,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "paper_packaging_checklist": {
+              "doc_id": "paper_packaging_checklist",
+              "title": "Paper Deal Packaging Checklist",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "pending",
+              "printed_at": null,
+              "job": null,
+              "error": null,
+              "print_count": 0,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            }
+          }
+        },
+        "complete": {
+          "deal_id": "31d38fe2590b",
+          "format_version": "stage4-1",
+          "state_version": 18,
+          "draft_only": false,
+          "completion_audited": true,
+          "packaging_fingerprint": "dd1ec64ebea1928d8f08cc1f9b5cffde02816f6d9e67cdd01088cd02fae478b1",
+          "packaging_artwork_hashes": {
+            "legacy-form": "e573cda404eabf92b8c6341648d6cd483c37c360052a54e687e13143f9fce149"
+          },
+          "packaging_revision": 1,
+          "packaging_checks": {
+            "lease_contract": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "buyers_order": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "title_application": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "odometer": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "insurance": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "form:legacy-form": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            },
+            "lease_payment": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            },
+            "privacy": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "lemon_law": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "buyer_copies": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            },
+            "second_review": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": true
+            },
+            "fi_signoff": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            },
+            "assembler_signoff": {
+              "actor": "fay",
+              "timestamp": "2026-11-13T16:14:19-05:00",
+              "reference": "SAMPLE paper original",
+              "revision": 1,
+              "separately_supplied": false
+            }
+          },
+          "packaging_history": [],
+          "items": {
+            "lease_worksheet": {
+              "doc_id": "lease_worksheet",
+              "title": "Lease Worksheet",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 2,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "legacy-form": {
+              "doc_id": "legacy-form",
+              "title": "SYNTHETIC LEGACY FORM",
+              "doc_class": "standard_letter",
+              "kind": "library_doc",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 2,
+                "copy_set": {
+                  "buyer": 1,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "buyer",
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 1,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            },
+            "paper_packaging_checklist": {
+              "doc_id": "paper_packaging_checklist",
+              "title": "Paper Deal Packaging Checklist",
+              "doc_class": "standard_letter",
+              "kind": "print",
+              "status": "printed",
+              "printed_at": "2026-11-13T16:14:19-05:00",
+              "job": {
+                "printer_name": "FakePrinter - Office (Letter)",
+                "tray": "Tray 1",
+                "paper": "Letter",
+                "copies": 1,
+                "copy_set": {
+                  "buyer": 0,
+                  "dealer": 1,
+                  "lender": 0
+                },
+                "recipients": [
+                  "dealer"
+                ],
+                "offsets_mm": {
+                  "x_mm": 0.0,
+                  "y_mm": 0.0
+                },
+                "spooler_job_id": 3,
+                "reprint": false
+              },
+              "error": null,
+              "print_count": 1,
+              "voided_by": null,
+              "voided_at": null,
+              "void_reason": null,
+              "reprint_pending": false,
+              "pulled_by": null,
+              "pulled_at": null
+            }
+          }
+        }
+      },
+      "pr4_fingerprint": "bec78d16dcb3a57fe7ec4932e2a0979c4e49400c42f151e09275e013b296bfc7"
+    }
+  }
+}

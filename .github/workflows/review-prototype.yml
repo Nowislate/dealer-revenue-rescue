@@ -1,0 +1,67 @@
+name: Native checks, data scan and Windows install
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'codex/**'
+permissions:
+  contents: read
+jobs:
+  checks:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Native standard-library suite
+        run: python -m unittest discover -s tests
+      - name: Browser core, intake, storage, assets and routing
+        if: hashFiles('review-prototypes/entry-recap-v1.6/run-checks.py') != ''
+        run: python review-prototypes/entry-recap-v1.6/run-checks.py
+      - name: Public tree - export, scan for real data, run the suite from it
+        if: runner.os == 'Linux'
+        run: |
+          python scripts/public_tree.py --out "$RUNNER_TEMP/public"
+          cd "$RUNNER_TEMP/public"
+          python -m unittest discover -s tests
+      - name: Windows install package (build, INSTALL.cmd, launcher, backup, shortcut)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          DP_NO_PAUSE: '1'
+          DP_DEBUG: '1'
+        run: |
+          $ErrorActionPreference = 'Stop'
+          python scripts/build_windows_release.py --out "$env:RUNNER_TEMP\dist"
+          $zip = Get-ChildItem "$env:RUNNER_TEMP\dist\DealerRevenueRescue-*.zip" | Select-Object -First 1
+          Expand-Archive $zip.FullName -DestinationPath "$env:RUNNER_TEMP\release"
+          $release = Get-ChildItem "$env:RUNNER_TEMP\release" -Directory | Select-Object -First 1
+          $target = "$env:RUNNER_TEMP\DealerRevenueRescue"
+          $desktop = "$env:RUNNER_TEMP\Desktop"
+          & "$($release.FullName)\INSTALL.cmd" --target $target --desktop $desktop
+          if ($LASTEXITCODE -ne 0) { throw "INSTALL.cmd failed: $LASTEXITCODE" }
+          foreach ($path in "$target\app\launch.pyw", "$target\app\install.json", "$target\Start Dealer Revenue Rescue.cmd", "$target\Back up now.cmd", "$target\store") {
+            if (-not (Test-Path $path)) { throw "missing after install: $path" }
+          }
+          $link = Get-ChildItem $desktop | Select-Object -First 1
+          if (-not $link) { throw 'no desktop shortcut' }
+          Write-Host "Desktop shortcut: $($link.Name)"
+          python "$target\app\launch.pyw" --check
+          if ($LASTEXITCODE -ne 0) { throw 'launcher check failed' }
+          & "$target\Back up now.cmd"
+          if ($LASTEXITCODE -ne 0) { throw 'Back up now.cmd failed' }
+          if (-not (Get-ChildItem "$target\store\backups\backup-*-manual.zip")) { throw 'no backup zip' }
+          & "$($release.FullName)\INSTALL.cmd" --target $target --skip-tests --no-shortcut
+          if ($LASTEXITCODE -ne 0) { throw 'reinstall failed' }
+          if (-not (Test-Path "$target\app-previous\launch.pyw")) { throw 'app-previous missing after reinstall' }
